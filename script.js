@@ -3,6 +3,25 @@
  * Paradigm: Functional / Immutable-ish
  */
 
+// ─── CONFIG & CONSTANTS ──────────────────────────
+const CORE_REGIMEN = [
+    { time: '7:00 AM', t: 'Morning Routine', d: 'Coffee, hydration, warm-up.', cat: 'leisure', dr: '1h', loc: 'Home Base', cost: 0 },
+    { time: '8:00 AM', t: 'Deep Work', d: 'Execution on highest priority goal.', cat: 'work', dr: '3h' },
+    { time: '11:00 AM', t: 'Break', d: 'Step away and stretch.', cat: 'leisure', dr: '1h' },
+    { time: '12:00 PM', t: 'Emails & Admin', d: 'Process messages and organize.', cat: 'work', dr: '2h' },
+    { time: '2:00 PM', t: 'Secondary Tasks', d: 'Exploratory tasks and side projects.', cat: 'work', dr: '2h', loc: 'Local Library / Desk' },
+    { time: '4:00 PM', t: 'Wind Down', d: 'Log off and rest.', cat: 'leisure', dr: 'EOD' }
+];
+
+const WEATHER_CODES = {
+    0: "Clear sky", 1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast",
+    45: "Fog", 48: "Fog",
+    51: "Drizzle", 53: "Drizzle", 55: "Drizzle",
+    61: "Rain", 63: "Rain", 65: "Heavy Rain",
+    80: "Showers", 81: "Showers", 82: "Heavy Showers",
+    95: "Thunderstorm"
+};
+
 // Utils
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => document.querySelectorAll(s);
@@ -435,16 +454,6 @@ function _handleEodFeedback(e) {
     _showFeedback('fb-eod', msg);
 }
 
-// Data Models
-const CORE_REGIMEN = [
-    { time: '7:00 AM', t: 'Morning Routine', d: 'Coffee, hydration, warm-up.', cat: 'leisure', dr: '1h', loc: 'Home Base', cost: 0 },
-    { time: '8:00 AM', t: 'Deep Work', d: 'Execution on highest priority goal.', cat: 'work', dr: '3h' },
-    { time: '11:00 AM', t: 'Break', d: 'Step away and stretch.', cat: 'leisure', dr: '1h' },
-    { time: '12:00 PM', t: 'Emails & Admin', d: 'Process messages and organize.', cat: 'work', dr: '2h' },
-    { time: '2:00 PM', t: 'Secondary Tasks', d: 'Exploratory tasks and side projects.', cat: 'work', dr: '2h', loc: 'Local Library / Desk' },
-    { time: '4:00 PM', t: 'Wind Down', d: 'Log off and rest.', cat: 'leisure', dr: 'EOD' }
-];
-
 // Mutators / Handlers
 async function _handleCompile(e) {
     e.preventDefault();
@@ -480,47 +489,7 @@ async function _handleCompile(e) {
             // Fetch Weather Context
             const weatherContext = await _getWeatherContext(startLat, startLon);
 
-            const startLocClause = (startLat && startLon)
-                ? `\nUser's STARTING LOCATION for today: "${startLocName}" (lat: ${startLat}, lon: ${startLon}). ${weatherContext} All suggested places should be reasonably reachable and appropriate for this weather.`
-                : `\nUser's location: ${startLocName}, Bangkok. ${weatherContext}`;
-
-            const notesClause = payload.notes ? `\n\nExtra user instructions: ${payload.notes}` : '';
-            const prompt = `You are a creative, insightful personal scheduler for a user in Bangkok, Thailand. Return ONLY a raw JSON object — no markdown, no extra text.
-            
-USER PROFILE:
-- Job/Role: ${userJob} (Crucial: suggest work activities and tasks that are SPECIFIC to this role, not generic).
-- Dietary Preference: ${foodPref} (Prioritize this preference, but ensure variety across different meals in the day).
-- Currency: Always calculate in THB (Thai Baht).
-
-Format: {
-  "itinerary": [{"time":"9:00 AM","t":"Task Name","d":"Vivid description.","cat":"work","dr":"2h","loc":"Place", "cost": 500, "cost_range": "300-700 THB"}],
-  "insights": ["3-4 short high-level strategic tips about the day: e.g. travel warnings, productivity hacks for their job, or local Bangkok context"]
-}
-
-TIME FORMAT: Always use 12-hour format with AM/PM (e.g., "9:00 AM", "2:30 PM"). DO NOT use 24-hour format.
-
-YOUR JOB — FILLING THE DAY:
-The user has a primary goal but a full day to fill from morning until their EOD time. Do NOT repeat the main goal for every block. Instead:
-1. Give the main goal its dedicated focus block(s).
-2. Infer what kind of person pursues this goal and fill the REST of the day with complementary, enriching activities they would genuinely enjoy.
-   - e.g. if goal = "write a novel" → suggest: a quiet cafe for reading, a local temple for reflection, a photography walk, a bookshop visit, journaling at a park, etc.
-   - e.g. if goal = "gym session" → suggest: a healthy brunch, a stretching/yoga class, a pool, a smoothie spot, etc.
-3. Always include: morning routine, meals (breakfast, lunch, dinner at real Bangkok restaurants), wind-down.
-    - **Meal Variety**: If a user has a specific preference (e.g., "Steak"), respect it but ensure variety. DO NOT suggest the same type of food for every meal. Balance it with other interesting options that fit their profile.
-4. The schedule MUST cover the full day from ~0700 to the user's EOD time with NO large gaps.
-5. Aim for 8–12 blocks total. Make the day feel RICH and COMPLETE.
-${startLocClause}
-
-LOCATION RULES:
-- Use REAL, SPECIFIC, SEARCHABLE place names on OpenStreetMap.
-- Good: "Wat Suthat Thepwararam", "Bookmoby Ekkamai", "The Commons Thonglor", "Paper Butter & The Burger Ari"
-- Bad: "Pizza shop", "Nearby temple", "Local park", "Home Base"
-- Prioritise places near the user's starting location (${startLocName}), keeping travel practical.
-- For home blocks: "Home, Bangkok"
-- "cat" = "work" or "leisure". "time" = 12h format like "9:00 AM".
-- For any meal blocks, suggest specific REAL Bangkok restaurants that match ${foodPref}.
-
-User data: ${JSON.stringify(payload)}${notesClause}`;
+            const prompt = _constructCompilePrompt(payload, userJob, foodPref, startLocName, startLat, startLon, weatherContext);
 
             const response = await fetch(geminiUrl, {
                 method: 'POST',
@@ -709,28 +678,12 @@ const _synthesizeItinerary = (payload) => {
 // DOM Renderer Helper
 // -----------------------------------------
 const _formatTo12h = (timeStr) => {
-    if (!timeStr) return '';
-    // If already has AM/PM, return as is
-    if (timeStr.toLowerCase().includes('am') || timeStr.toLowerCase().includes('pm')) return timeStr;
+    const parts = _parseTimeParts(timeStr);
+    if (!parts) return '';
 
-    let totalMinutes = 0;
-    if (timeStr.includes(':')) {
-        const [h, m] = timeStr.split(':');
-        totalMinutes = parseInt(h, 10) * 60 + parseInt(m, 10);
-    } else {
-        // Handle "0900" or "1330"
-        const h = parseInt(timeStr.substring(0, timeStr.length - 2), 10);
-        const m = parseInt(timeStr.substring(timeStr.length - 2), 10);
-        totalMinutes = h * 60 + m;
-    }
-
-    const h = Math.floor(totalMinutes / 60);
-    const m = totalMinutes % 60;
-    const suffix = h >= 12 ? 'PM' : 'AM';
-    const displayH = h % 12 || 12;
-    const displayM = m.toString().padStart(2, '0');
-
-    return `${displayH}:${displayM} ${suffix}`;
+    const displayH = parts.hours % 12 || 12;
+    const displayM = parts.minutes.toString().padStart(2, '0');
+    return `${displayH}:${displayM} ${parts.hours >= 12 ? 'PM' : 'AM'}`;
 };
 
 function _mountSurface(state, itinerary, insights) {
@@ -1224,10 +1177,33 @@ function _haversineKm(lat1, lon1, lat2, lon2) {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-function _formatMinutes(mins) {
-    if (mins < 60) return `~${Math.round(mins)} min`;
-    const h = Math.floor(mins / 60), m = Math.round(mins % 60);
-    return m > 0 ? `~${h}h ${m}m` : `~${h}h`;
+/**
+ * Unified Time Parser
+ * Input: "9:00 AM", "13:30", "0930"
+ * Output: { hours, minutes, ampm } 24h normalized
+ */
+function _parseTimeParts(timeStr) {
+    if (!timeStr) return null;
+    let hours = 0, minutes = 0, ampm = 'AM';
+
+    const match12h = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (match12h) {
+        hours = parseInt(match12h[1], 10);
+        minutes = parseInt(match12h[2], 10);
+        ampm = match12h[3].toUpperCase();
+        if (ampm === 'PM' && hours < 12) hours += 12;
+        if (ampm === 'AM' && hours === 12) hours = 0;
+    } else if (timeStr.includes(':')) {
+        const [h, m] = timeStr.split(':');
+        hours = parseInt(h, 10);
+        minutes = parseInt(m, 10);
+    } else {
+        // Handle "0900" or "1330"
+        hours = parseInt(timeStr.substring(0, timeStr.length - 2), 10);
+        minutes = parseInt(timeStr.substring(timeStr.length - 2), 10);
+    }
+
+    return { hours, minutes, ampm: hours >= 12 ? 'PM' : 'AM' };
 }
 
 function _buildTransportCards(destLat, destLon, destName) {
@@ -1420,6 +1396,61 @@ function _initLocPicker() {
 }
 
 /**
+ * Constructs the strategic system prompt for Gemini based on user profile and environment.
+ * @param {Object} payload User form data (directive, agenda, etc)
+ * @param {string} userJob Professional role
+ * @param {string} foodPref Dietary preferences
+ * @param {string} startLocName Location name
+ * @param {number} startLat Latitude
+ * @param {number} startLon Longitude
+ * @param {string} weatherContext Descriptive weather string
+ */
+function _constructCompilePrompt(payload, userJob, foodPref, startLocName, startLat, startLon, weatherContext) {
+    const startLocClause = (startLat && startLon)
+        ? `\nUser's STARTING LOCATION for today: "${startLocName}" (lat: ${startLat}, lon: ${startLon}). ${weatherContext} All suggested places should be reasonably reachable and appropriate for this weather.`
+        : `\nUser's location: ${startLocName}, Bangkok. ${weatherContext}`;
+
+    const notesClause = payload.notes ? `\n\nExtra user instructions: ${payload.notes}` : '';
+
+    return `You are a creative, insightful personal scheduler for a user in Bangkok, Thailand. Return ONLY a raw JSON object — no markdown, no extra text.
+            
+USER PROFILE:
+- Job/Role: ${userJob} (Crucial: suggest work activities and tasks that are SPECIFIC to this role, not generic).
+- Dietary Preference: ${foodPref} (Prioritize this preference, but ensure variety across different meals in the day).
+- Currency: Always calculate in THB (Thai Baht).
+
+Format: {
+  "itinerary": [{"time":"9:00 AM","t":"Task Name","d":"Vivid description.","cat":"work","dr":"2h","loc":"Place", "cost": 500, "cost_range": "300-700 THB"}],
+  "insights": ["3-4 short high-level strategic tips about the day: e.g. travel warnings, productivity hacks for their job, or local Bangkok context"]
+}
+
+TIME FORMAT: Always use 12-hour format with AM/PM (e.g., "9:00 AM", "2:30 PM"). DO NOT use 24-hour format.
+
+YOUR JOB — FILLING THE DAY:
+The user has a primary goal but a full day to fill from morning until their EOD time. Do NOT repeat the main goal for every block. Instead:
+1. Give the main goal its dedicated focus block(s).
+2. Infer what kind of person pursues this goal and fill the REST of the day with complementary, enriching activities they would genuinely enjoy.
+   - e.g. if goal = "write a novel" → suggest: a quiet cafe for reading, a local temple for reflection, a photography walk, a bookshop visit, journaling at a park, etc.
+   - e.g. if goal = "gym session" → suggest: a healthy brunch, a stretching/yoga class, a pool, a smoothie spot, etc.
+3. Always include: morning routine, meals (breakfast, lunch, dinner at real Bangkok restaurants), wind-down.
+    - **Meal Variety**: If a user has a specific preference (e.g., "Steak"), respect it but ensure variety. DO NOT suggest the same type of food for every meal. Balance it with other interesting options that fit their profile.
+4. The schedule MUST cover the full day from ~0700 to the user's EOD time with NO large gaps.
+5. Aim for 8–12 blocks total. Make the day feel RICH and COMPLETE.
+${startLocClause}
+
+LOCATION RULES:
+- Use REAL, SPECIFIC, SEARCHABLE place names on OpenStreetMap.
+- Good: "Wat Suthat Thepwararam", "Bookmoby Ekkamai", "The Commons Thonglor", "Paper Butter & The Burger Ari"
+- Bad: "Pizza shop", "Nearby temple", "Local park", "Home Base"
+- Prioritise places near the user's starting location (${startLocName}), keeping travel practical.
+- For home blocks: "Home, Bangkok"
+- "cat" = "work" or "leisure". "time" = 12h format like "9:00 AM".
+- For any meal blocks, suggest specific REAL Bangkok restaurants that match ${foodPref}.
+
+User data: ${JSON.stringify(payload)}${notesClause}`;
+}
+
+/**
  * Fetches current weather for the given coordinates (or defaults to Bangkok)
  * Returns a short string description for AI context and updates the UI.
  */
@@ -1439,16 +1470,7 @@ async function _getWeatherContext(lat = 13.7563, lon = 100.5018) {
         const daily = weatherData.daily;
         const curAqi = aqiData.current;
 
-        // Basic WMO Weather Code Mapping
-        const codes = {
-            0: "Clear sky", 1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast",
-            45: "Fog", 48: "Fog",
-            51: "Drizzle", 53: "Drizzle", 55: "Drizzle",
-            61: "Rain", 63: "Rain", 65: "Heavy Rain",
-            80: "Showers", 81: "Showers", 82: "Heavy Showers",
-            95: "Thunderstorm"
-        };
-        const desc = codes[cur.weather_code] || "Variable";
+        const desc = WEATHER_CODES[cur.weather_code] || "Variable";
         const temp = Math.round(cur.temperature_2m);
         const rainProb = daily.precipitation_probability_max[0] || 0;
         const pm25 = Math.round(curAqi.pm2_5);
@@ -1514,22 +1536,14 @@ function _handleExportCalendar() {
         itinerary.forEach((node, i) => {
             if (node.dr === 'EOD') return;
 
-            // Parse time (e.g., "9:00 AM")
-            const timeParts = node.time.match(/(\d+):(\d+)\s*(AM|PM)/i);
-            if (!timeParts) return;
+            const parts = _parseTimeParts(node.time);
+            if (!parts) return;
 
-            let hours = parseInt(timeParts[1], 10);
-            const minutes = timeParts[2];
-            const ampm = timeParts[3].toUpperCase();
-
-            if (ampm === 'PM' && hours < 12) hours += 12;
-            if (ampm === 'AM' && hours === 12) hours = 0;
-
-            const startStr = `${dateStr}T${String(hours).padStart(2, '0')}${minutes}00`;
+            const startStr = `${dateStr}T${String(parts.hours).padStart(2, '0')}${String(parts.minutes).padStart(2, '0')}00`;
 
             // Calculate end time (duration e.g. "2h" or "30m")
-            let endHours = hours;
-            let endMinutes = parseInt(minutes, 10);
+            let endHours = parts.hours;
+            let endMinutes = parts.minutes;
             const drMatch = node.dr.match(/(\d+)(h|m)/);
             if (drMatch) {
                 const val = parseInt(drMatch[1], 10);
