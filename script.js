@@ -1080,11 +1080,14 @@ USER CONTEXT:
 - Location Proximity: If the user mentions a landmark/mall (e.g., "Siam Paragon", "EmQuartier"), you MUST find specific REAL restaurants or activities located INSIDE or immediately next to that specific place that match their ${foodPref} preference.
 
 You can either:
-1. Answer questions about the schedule in plain text.
-2. If the user asks to CHANGE the schedule (add, remove, move tasks), return a JSON object ONLY: {"type":"schedule_update","message":"Brief confirmation.","schedule":[...full updated array...]}
-   - The schedule array format: [{"time":"2:00 PM","t":"Task Name","d":"Description.","cat":"work","dr":"2h","loc":"Place Name", "cost": 500, "cost_range": "400-800 THB"}]
-   - Ensure "loc" uses specific real Bangkok place names.
-3. For all other replies, just reply in plain text — no JSON.`;
+1. Answer questions about the schedule in plain text (e.g. "What time is lunch?").
+2. If the user asks to CHANGE, ADD, REMOVE, or MOVE anything, you MUST return a valid JSON object ONLY. 
+   CRITICAL: Do NOT include any intro text, conversational filler, or markdown outside the JSON.
+   Format: {"type":"schedule_update","message":"Brief status message.","schedule":[...the full updated itinerary array...]}
+   - Use the full array of tasks.
+   - Example format for items: {"time":"2:00 PM","t":"Task Name","d":"Description.","cat":"work","dr":"2h","loc":"Place Name", "cost": 500, "cost_range": "400-800 THB"}
+3. For all other replies, just reply in plain text.
+`;
 
     try {
         const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
@@ -1114,20 +1117,24 @@ You can either:
 
         typingNode.remove();
 
-        // Try to detect schedule update JSON
+        // Try to detect schedule update JSON (robust extraction)
         try {
-            const cleaned = replyText.replace(/```json/g, '').replace(/```/g, '').trim();
-            const parsed = JSON.parse(cleaned);
+            const jsonMatch = replyText.match(/\{[\s\S]*\}/);
+            const jsonStr = jsonMatch ? jsonMatch[0] : replyText;
+            const parsed = JSON.parse(jsonStr);
+
             if (parsed.type === 'schedule_update' && parsed.schedule) {
                 _appendChatMsg(parsed.message || 'Schedule updated!', 'ai');
                 // Update localStorage and re-render
                 const saved = JSON.parse(localStorage.getItem('wftd_today_schedule') || '{}');
                 saved.itinerary = parsed.schedule;
                 localStorage.setItem('wftd_today_schedule', JSON.stringify(saved));
+
+                // Re-mount the surface to show changes
                 _mountSurface(saved.state || {}, parsed.schedule, saved.insights || []);
                 return;
             }
-        } catch (_) { /* Not JSON — plain text reply */ }
+        } catch (_) { /* Not JSON or invalid format — fall through to plain text */ }
 
         _appendChatMsg(replyText, 'ai');
     } catch (err) {
