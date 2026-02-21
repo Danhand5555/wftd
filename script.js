@@ -705,9 +705,9 @@ function _mountSurface(state, itinerary, insights) {
 
     // 3. Hydrate Logs (Insights)
     const logContainer = $('#system-logs');
-    logContainer.innerHTML = insights.map(i => `
+    logContainer.innerHTML = insights.map((i, idx) => `
         <li class="insight-item">
-            <span class="insight-icon">💡</span>
+            <span class="insight-index">0${idx + 1}</span>
             <span class="insight-text">${i}</span>
         </li>
     `).join('');
