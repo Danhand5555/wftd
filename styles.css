@@ -709,7 +709,7 @@ input {
 .modal-overlay {
     position: fixed;
     inset: 0;
-    z-index: 1000;
+    z-index: 10000;
     background: rgba(15, 15, 15, 0.4);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -1134,6 +1134,8 @@ input {
         max-height: none;
         overflow-y: auto;
         flex: 1;
+        padding-bottom: 80px;
+        /* Space for browser chrome / fixed elements */
     }
 
     /* Transport: 2×2 grid */
@@ -1187,7 +1189,7 @@ input {
     box-shadow: -4px -4px 0 var(--clr-ink);
     display: flex;
     flex-direction: column;
-    z-index: 9000;
+    z-index: 5000;
     transition: max-height 0.3s var(--ease-fluid);
 }
 
@@ -1324,7 +1326,7 @@ input {
     font-size: 22px;
     cursor: pointer;
     box-shadow: 3px 3px 0 var(--clr-brand);
-    z-index: 9001;
+    z-index: 5001;
     transition: transform 0.2s;
 }
 
