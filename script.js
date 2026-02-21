@@ -1559,14 +1559,22 @@ function _handleExportCalendar() {
 
         icsContent.push("END:VCALENDAR");
 
-        const blob = new Blob([icsContent.join("\r\n")], { type: 'text/calendar;charset=utf-8' });
-        const url = window.URL.createObjectURL(blob);
+        const calendarString = icsContent.join("\r\n");
+        const fileName = `WFTD_Schedule_${dateStr}.ics`;
+
+        // Safari Compatibility: Use Data URI for small text files
+        const uri = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(calendarString);
+
         const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `WFTD_Schedule_${dateStr}.ics`);
+        link.href = uri;
+        link.setAttribute('download', fileName);
+
+        // Essential for Safari/Firefox
         document.body.appendChild(link);
         link.click();
-        document.body.removeChild(link);
+
+        // Cleanup
+        setTimeout(() => document.body.removeChild(link), 100);
     } catch (e) {
         console.error("Calendar export failed", e);
         alert("Failed to export calendar.");
