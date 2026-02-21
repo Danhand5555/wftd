@@ -185,6 +185,12 @@ function _unlockWorkspace(alias) {
         try {
             const data = JSON.parse(localStorage.getItem('wftd_today_schedule'));
             if (data && data.itinerary) {
+                // Restore hidden location state for weather
+                if (data.state) {
+                    $('#loc-hidden-lat').value = data.state.location_lat || 13.7563;
+                    $('#loc-hidden-lon').value = data.state.location_lon || 100.5018;
+                    $('#loc-hidden-name').value = data.state.location || 'Bangkok';
+                }
                 _mountSurface(data.state, data.itinerary, data.insights);
                 return; // Bypass form setup completely
             }
@@ -776,6 +782,11 @@ function _mountSurface(state, itinerary, insights) {
         const surface = $('#app-surface');
         surface.classList.remove('hide');
         surface.removeAttribute('aria-hidden');
+
+        // Refresh weather card on mount
+        const lat = $('#loc-hidden-lat')?.value || 13.7563;
+        const lon = $('#loc-hidden-lon')?.value || 100.5018;
+        _getWeatherContext(lat, lon);
 
         _startLiveTracking();
         _showChat();
@@ -1410,33 +1421,66 @@ function _initLocPicker() {
 
 /**
  * Fetches current weather for the given coordinates (or defaults to Bangkok)
- * Returns a short string description for AI context.
+ * Returns a short string description for AI context and updates the UI.
  */
 async function _getWeatherContext(lat = 13.7563, lon = 100.5018) {
     try {
-        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=Asia%2FBangkok`);
-        if (!res.ok) return "Weather data unavailable.";
-        const data = await res.json();
-        const cw = data.current_weather;
-        if (!cw) return "Weather data unavailable.";
+        // 1. Fetch Weather Data (Temp, Code, Rain)
+        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,relative_humidity_2m&daily=precipitation_probability_max&timezone=Asia%2FBangkok&forecast_days=1`;
+        const weatherRes = await fetch(weatherUrl);
+        const weatherData = await weatherRes.json();
+
+        // 2. Fetch AQI Data (PM2.5)
+        const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=pm2_5,us_aqi`;
+        const aqiRes = await fetch(aqiUrl);
+        const aqiData = await aqiRes.json();
+
+        const cur = weatherData.current;
+        const daily = weatherData.daily;
+        const curAqi = aqiData.current;
 
         // Basic WMO Weather Code Mapping
         const codes = {
             0: "Clear sky", 1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast",
-            45: "Fog", 48: "Depositing rime fog",
-            51: "Light drizzle", 53: "Moderate drizzle", 55: "Dense drizzle",
-            61: "Slight rain", 63: "Moderate rain", 65: "Heavy rain",
-            71: "Slight snow", 73: "Moderate snow", 75: "Heavy snow",
-            77: "Snow grains",
-            80: "Slight rain showers", 81: "Moderate rain showers", 82: "Violent rain showers",
-            95: "Thunderstorm", 96: "Thunderstorm with slight hail", 99: "Thunderstorm with heavy hail"
+            45: "Fog", 48: "Fog",
+            51: "Drizzle", 53: "Drizzle", 55: "Drizzle",
+            61: "Rain", 63: "Rain", 65: "Heavy Rain",
+            80: "Showers", 81: "Showers", 82: "Heavy Showers",
+            95: "Thunderstorm"
         };
-        const desc = codes[cw.weathercode] || "Variable";
-        return `Current weather in Bangkok: ${desc}, ${cw.temperature}°C.`;
+        const desc = codes[cur.weather_code] || "Variable";
+        const temp = Math.round(cur.temperature_2m);
+        const rainProb = daily.precipitation_probability_max[0] || 0;
+        const pm25 = Math.round(curAqi.pm2_5);
+        const usAqi = curAqi.us_aqi;
+
+        // Update UI
+        _updateWeatherUI(temp, desc, pm25, usAqi, rainProb);
+
+        return `Current weather in Bangkok: ${desc}, ${temp}°C. PM2.5: ${pm25} µg/m³. Rain Chance: ${rainProb}%.`;
     } catch (e) {
         console.warn("Weather fetch failed", e);
         return "Weather data unavailable.";
     }
+}
+
+function _updateWeatherUI(temp, desc, pm25, usAqi, rain) {
+    const tempNode = $('#weather-temp');
+    const descNode = $('#weather-desc');
+    const aqiNode = $('#weather-aqi');
+    const rainNode = $('#weather-rain');
+
+    if (tempNode) tempNode.textContent = `${temp}°`;
+    if (descNode) descNode.textContent = desc;
+    if (aqiNode) {
+        aqiNode.textContent = `${pm25} (AQI ${usAqi})`;
+        // AQI Color logic
+        aqiNode.className = 'metric-val';
+        if (usAqi <= 50) aqiNode.classList.add('aqi-good');
+        else if (usAqi <= 100) aqiNode.classList.add('aqi-moderate');
+        else aqiNode.classList.add('aqi-unhealthy');
+    }
+    if (rainNode) rainNode.textContent = `${rain}%`;
 }
 
 /**
