@@ -1226,27 +1226,68 @@ input {
 
     .panel-rail {
         position: static;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+        display: flex;
+        flex-direction: column;
         gap: var(--space-16);
+    }
+
+    /* Keep telemetry and weather in a horizontal-ish row if possible, or stacked nicely */
+    .telemetry-list {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        margin-top: var(--space-16);
+    }
+
+    .weather-metrics {
+        flex-wrap: wrap;
+        gap: var(--space-16);
+    }
+
+    .view-toggles {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    /* Navigation improvements */
+    .top-nav {
+        padding-top: var(--space-8);
+        align-items: center;
+    }
+
+    .brand-mark {
+        font-size: var(--tx-base);
     }
 
     /* Step form safe sizing */
     .step-card {
-        padding: 20px clamp(16px, 5vw, 48px);
+        padding: 40px clamp(16px, 5vw, 32px);
     }
 
     .majestic-label {
-        font-size: clamp(22px, 6vw, 40px);
+        font-size: clamp(24px, 7vw, 36px);
     }
 
     .input-majestic {
-        font-size: clamp(20px, 5vw, 36px);
+        font-size: clamp(20px, 6vw, 28px);
     }
 
     .immersive-dock {
-        padding-top: var(--space-24);
+        padding-top: var(--space-32);
         margin-top: var(--space-16);
+    }
+
+    .action-dock {
+        flex-direction: column-reverse;
+        gap: 12px;
+    }
+
+    .action-dock .btn-ghost {
+        width: 100%;
+        text-align: center;
+    }
+
+    .action-dock .btn-solid {
+        width: 100%;
+        justify-content: center;
     }
 
     /* Modal → bottom sheet on mobile */
@@ -1262,8 +1303,8 @@ input {
         border-right: none;
         border-bottom: none;
         box-shadow: none;
-        border-radius: 12px 12px 0 0;
-        max-height: 90vh;
+        border-radius: 20px 20px 0 0;
+        max-height: 85vh;
         display: flex;
         flex-direction: column;
     }
@@ -1272,8 +1313,8 @@ input {
         max-height: none;
         overflow-y: auto;
         flex: 1;
-        padding-bottom: 80px;
-        /* Space for browser chrome / fixed elements */
+        padding-bottom: 100px;
+        /* Space for mobile nav/safe areas */
     }
 
     /* Transport: 2×2 grid */
@@ -1289,7 +1330,7 @@ input {
         border-radius: 12px 12px 0 0;
         border-left: none;
         border-right: none;
-        max-height: 60vh;
+        max-height: 70vh;
     }
 
     .chat-float-btn {
@@ -1308,8 +1349,8 @@ input {
     }
 
     .toggle-btn {
-        padding: 6px 10px;
-        font-size: var(--tx-sm);
+        padding: 8px 12px;
+        font-size: 11px;
     }
 }
 
