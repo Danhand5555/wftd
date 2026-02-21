@@ -39,6 +39,12 @@ function _initEngine() {
         });
     }
 
+    // Calendar Export Event
+    const exportBtn = $('#export-cal-btn');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', _handleExportCalendar);
+    }
+
     // Suggestion Chips Binding (using event delegation for dynamic chips)
     document.addEventListener('click', (e) => {
         const chip = e.target.closest('.chip');
@@ -462,18 +468,22 @@ async function _handleCompile(e) {
 
             // Pick up the chosen starting location from Step 4
             const startLocName = $('#loc-hidden-name')?.value || 'Bangkok';
-            const startLat = $('#loc-hidden-lat')?.value;
-            const startLon = $('#loc-hidden-lon')?.value;
+            const startLat = $('#loc-hidden-lat')?.value || 13.7563;
+            const startLon = $('#loc-hidden-lon')?.value || 100.5018;
+
+            // Fetch Weather Context
+            const weatherContext = await _getWeatherContext(startLat, startLon);
+
             const startLocClause = (startLat && startLon)
-                ? `\nUser's STARTING LOCATION for today: "${startLocName}" (lat: ${startLat}, lon: ${startLon}). All suggested places should be reasonably reachable from this point.`
-                : `\nUser's location: ${startLocName}, Bangkok.`;
+                ? `\nUser's STARTING LOCATION for today: "${startLocName}" (lat: ${startLat}, lon: ${startLon}). ${weatherContext} All suggested places should be reasonably reachable and appropriate for this weather.`
+                : `\nUser's location: ${startLocName}, Bangkok. ${weatherContext}`;
 
             const notesClause = payload.notes ? `\n\nExtra user instructions: ${payload.notes}` : '';
             const prompt = `You are a creative, insightful personal scheduler for a user in Bangkok, Thailand. Return ONLY a raw JSON object — no markdown, no extra text.
             
 USER PROFILE:
 - Job/Role: ${userJob} (Crucial: suggest work activities and tasks that are SPECIFIC to this role, not generic).
-- Dietary Preference: ${foodPref} (Crucial: all food/restaurant suggestions MUST prioritize and strictly follow this preference).
+- Dietary Preference: ${foodPref} (Prioritize this preference, but ensure variety across different meals in the day).
 - Currency: Always calculate in THB (Thai Baht).
 
 Format: {
@@ -490,6 +500,7 @@ The user has a primary goal but a full day to fill from morning until their EOD 
    - e.g. if goal = "write a novel" → suggest: a quiet cafe for reading, a local temple for reflection, a photography walk, a bookshop visit, journaling at a park, etc.
    - e.g. if goal = "gym session" → suggest: a healthy brunch, a stretching/yoga class, a pool, a smoothie spot, etc.
 3. Always include: morning routine, meals (breakfast, lunch, dinner at real Bangkok restaurants), wind-down.
+    - **Meal Variety**: If a user has a specific preference (e.g., "Steak"), respect it but ensure variety. DO NOT suggest the same type of food for every meal. Balance it with other interesting options that fit their profile.
 4. The schedule MUST cover the full day from ~0700 to the user's EOD time with NO large gaps.
 5. Aim for 8–12 blocks total. Make the day feel RICH and COMPLETE.
 ${startLocClause}
@@ -1074,7 +1085,7 @@ async function _sendChatMessage() {
 
 USER CONTEXT:
 - Job/Role: ${userJob} (For any new work tasks, suggest things specific to this professional background).
-- Dietary Preference: ${foodPref} (Strictly follow this for any new food/cafe suggestions).
+- Dietary Preference: ${foodPref} (Prioritize this for any new food/cafe suggestions, but ensure variety—don't suggest the same type of meal repeatedly).
 - Currency: Always use THB (Thai Baht).
 - Time: Use AM/PM format (e.g. 2:00 PM).
 - Location Proximity: If the user mentions a landmark/mall (e.g., "Siam Paragon", "EmQuartier"), you MUST find specific REAL restaurants or activities located INSIDE or immediately next to that specific place that match their ${foodPref} preference.
@@ -1395,6 +1406,127 @@ function _initLocPicker() {
         // Invalidate size after container becomes visible
         setTimeout(() => _locPickerMap && _locPickerMap.invalidateSize(), 200);
     });
+}
+
+/**
+ * Fetches current weather for the given coordinates (or defaults to Bangkok)
+ * Returns a short string description for AI context.
+ */
+async function _getWeatherContext(lat = 13.7563, lon = 100.5018) {
+    try {
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=Asia%2FBangkok`);
+        if (!res.ok) return "Weather data unavailable.";
+        const data = await res.json();
+        const cw = data.current_weather;
+        if (!cw) return "Weather data unavailable.";
+
+        // Basic WMO Weather Code Mapping
+        const codes = {
+            0: "Clear sky", 1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast",
+            45: "Fog", 48: "Depositing rime fog",
+            51: "Light drizzle", 53: "Moderate drizzle", 55: "Dense drizzle",
+            61: "Slight rain", 63: "Moderate rain", 65: "Heavy rain",
+            71: "Slight snow", 73: "Moderate snow", 75: "Heavy snow",
+            77: "Snow grains",
+            80: "Slight rain showers", 81: "Moderate rain showers", 82: "Violent rain showers",
+            95: "Thunderstorm", 96: "Thunderstorm with slight hail", 99: "Thunderstorm with heavy hail"
+        };
+        const desc = codes[cw.weathercode] || "Variable";
+        return `Current weather in Bangkok: ${desc}, ${cw.temperature}°C.`;
+    } catch (e) {
+        console.warn("Weather fetch failed", e);
+        return "Weather data unavailable.";
+    }
+}
+
+/**
+ * Generates and downloads a .ics file for the current schedule
+ */
+function _handleExportCalendar() {
+    try {
+        const saved = JSON.parse(localStorage.getItem('wftd_today_schedule'));
+        if (!saved || !saved.itinerary) {
+            alert("No schedule found to export.");
+            return;
+        }
+
+        const itinerary = saved.itinerary;
+        const alias = localStorage.getItem('wftd_alias') || 'User';
+
+        let icsContent = [
+            "BEGIN:VCALENDAR",
+            "VERSION:2.0",
+            "PRODID:-//WFTD//Bangkok Scheduler//EN",
+            "CALSCALE:GREGORIAN",
+            "METHOD:PUBLISH"
+        ];
+
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const dateStr = `${year}${month}${day}`;
+
+        itinerary.forEach((node, i) => {
+            if (node.dr === 'EOD') return;
+
+            // Parse time (e.g., "9:00 AM")
+            const timeParts = node.time.match(/(\d+):(\d+)\s*(AM|PM)/i);
+            if (!timeParts) return;
+
+            let hours = parseInt(timeParts[1], 10);
+            const minutes = timeParts[2];
+            const ampm = timeParts[3].toUpperCase();
+
+            if (ampm === 'PM' && hours < 12) hours += 12;
+            if (ampm === 'AM' && hours === 12) hours = 0;
+
+            const startStr = `${dateStr}T${String(hours).padStart(2, '0')}${minutes}00`;
+
+            // Calculate end time (duration e.g. "2h" or "30m")
+            let endHours = hours;
+            let endMinutes = parseInt(minutes, 10);
+            const drMatch = node.dr.match(/(\d+)(h|m)/);
+            if (drMatch) {
+                const val = parseInt(drMatch[1], 10);
+                if (drMatch[2] === 'h') endHours += val;
+                else endMinutes += val;
+
+                if (endMinutes >= 60) {
+                    endHours += Math.floor(endMinutes / 60);
+                    endMinutes %= 60;
+                }
+            } else {
+                endHours += 1; // Default 1h
+            }
+
+            const endStr = `${dateStr}T${String(endHours % 24).padStart(2, '0')}${String(endMinutes).padStart(2, '0')}00`;
+
+            icsContent.push("BEGIN:VEVENT");
+            icsContent.push(`UID:${Date.now()}-${i}@wftd.app`);
+            icsContent.push(`DTSTAMP:${startStr}Z`);
+            icsContent.push(`DTSTART:${startStr}`);
+            icsContent.push(`DTEND:${endStr}`);
+            icsContent.push(`SUMMARY:[WFTD] ${node.t}`);
+            icsContent.push(`DESCRIPTION:${node.d}`);
+            icsContent.push(`LOCATION:${node.loc || 'Bangkok'}`);
+            icsContent.push("END:VEVENT");
+        });
+
+        icsContent.push("END:VCALENDAR");
+
+        const blob = new Blob([icsContent.join("\r\n")], { type: 'text/calendar;charset=utf-8' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `WFTD_Schedule_${dateStr}.ics`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } catch (e) {
+        console.error("Calendar export failed", e);
+        alert("Failed to export calendar.");
+    }
 }
 
 // Init once DOM is ready
