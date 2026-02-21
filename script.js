@@ -39,31 +39,31 @@ function _initEngine() {
         });
     }
 
-    // Suggestion Chips Binding
-    $$('.chip').forEach(chip => {
-        chip.addEventListener('click', (e) => {
-            const val = e.target.dataset.value;
-            const stepCard = e.target.closest('.step-card');
-            const stepNum = stepCard.dataset.step;
+    // Suggestion Chips Binding (using event delegation for dynamic chips)
+    document.addEventListener('click', (e) => {
+        const chip = e.target.closest('.chip');
+        if (!chip) return;
 
-            if (stepNum === "1") {
-                const input = $('textarea[name="directive"]');
+        const val = chip.dataset.value;
+        const stepCard = chip.closest('.step-card');
+        if (!stepCard) return; // Not a form chip
+
+        const stepNum = stepCard.dataset.step;
+
+        if (stepNum === "1") {
+            const input = $('textarea[name="directive"]');
+            input.value = val;
+            _handleGoalFeedback({ target: input });
+            setTimeout(_nextStep, 150);
+        } else if (stepNum === "2") {
+            const input = $('input[name="entities"]');
+            if (input.value && val) {
+                input.value = input.value + ', ' + val;
+            } else {
                 input.value = val;
-                _handleGoalFeedback({ target: input });
-                setTimeout(_nextStep, 150);
-            } else if (stepNum === "2") {
-                const input = $('input[name="entities"]');
-                // Append if not empty to support multiple friends
-                if (input.value && val) {
-                    input.value = input.value + ', ' + val;
-                } else {
-                    input.value = val;
-                }
-
-                _handleEntitiesFeedback({ target: input });
-
             }
-        });
+            _handleEntitiesFeedback({ target: input });
+        }
     });
 
     // Smart Enter logic (Allow Shift+Enter for Textarea)
@@ -197,6 +197,8 @@ function _unlockWorkspace(alias) {
         if (step1Label) {
             step1Label.textContent = `What's your main goal for today, ${alias}?`;
         }
+        _renderGoalChips();
+
 
         // Focus first input automatically
         setTimeout(() => {
@@ -206,9 +208,59 @@ function _unlockWorkspace(alias) {
     }, 600); // Wait for transition
 }
 
-// -----------------------------------------
-// ENGINE STATE & NAVIGATION
-// -----------------------------------------
+// Helper to suggest appropriate chips based on job
+function _renderGoalChips() {
+    const job = (localStorage.getItem('wftd_job') || '').toLowerCase();
+    const container = $('#goal-chips-container');
+    if (!container) return;
+
+    let chips = [];
+
+    if (job.includes('hedge') || job.includes('fund') || job.includes('trader') || job.includes('finance')) {
+        chips = [
+            { label: 'Market Analysis', val: 'Execute full market analysis and risk report' },
+            { label: 'Strategy Sync', val: 'Hedge strategy alignment and rebalancing' },
+            { label: 'Alpha Search', val: 'Researching new alpha opportunities and signals' },
+            { label: 'Portfolio Review', val: 'Detailed portfolio and drawdown review' }
+        ];
+    } else if (job.includes('design') || job.includes('creative') || job.includes('artist')) {
+        chips = [
+            { label: 'Moodboard', val: 'Curation and visual research for new concept' },
+            { label: 'UI Prototyping', val: 'High-fidelity wireframing and prototyping' },
+            { label: 'Client Review', val: 'Prepare presentation for design review' },
+            { label: 'Visual Audit', val: 'Reviewing brand design system consistency' }
+        ];
+    } else if (job.includes('engineer') || job.includes('developer') || job.includes('coder') || job.includes('dev')) {
+        chips = [
+            { label: 'Deep Code', val: 'Focused architecture and coding session' },
+            { label: 'Bug Squashing', val: 'Fixing critical bugs and technical debt' },
+            { label: 'PR Review', val: 'Reviewing pull requests and code quality' },
+            { label: 'Deployment', val: 'Managing production deployments and CI/CD' }
+        ];
+    } else if (job.includes('lawyer') || job.includes('legal')) {
+        chips = [
+            { label: 'Contract Review', val: 'Detailed review and markup of legal contracts' },
+            { label: 'Case Research', val: 'Researching precedents and legal arguments' },
+            { label: 'Drafting', val: 'Drafting legal notices or agreements' },
+            { label: 'Client Sync', val: 'Preparation for upcoming litigation or sync' }
+        ];
+    } else {
+        // General / Default
+        chips = [
+            { label: 'Deep Work', val: 'Intense focus on highest priority outcome' },
+            { label: 'Strategic Plan', val: 'Mapping out quarterly goals and growth' },
+            { label: 'Admin Clear', val: 'Zeroing my inbox and processing tasks' },
+            { label: 'Team Alignment', val: 'Aligning with the team on core metrics' }
+        ];
+    }
+
+    // Always add Rest Day
+    chips.push({ label: 'Rest Day', val: 'Rest and mental recovery' });
+
+    container.innerHTML = chips.map(c => `
+        <button type="button" class="chip" data-value="${c.val}">${c.label}</button>
+    `).join('');
+}
 
 // State
 let currentStep = 1;
