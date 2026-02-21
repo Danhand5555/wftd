@@ -1,0 +1,8 @@
+Act as an expert frontend engineer, taking over this codebase.
+
+The following is a highly polished, brutalist/editorial style web application using pure Vanilla JS, HTML, and CSS (Vite setup). Please use this code exactly as the foundation for our next generation.
+
+CRITICAL INSTRUCTIONS FOR THE AI'S SCOPE:
+1. The AI's ONLY job is to create the schedule and answer questions about the schedule. Do not add bloated features outside of this scope.
+2. If building a new UI feature, build a clean Chat interface on the dashboard where the user can ask the AI questions about their schedule.
+3. Do not remove the massive typography, the niche "Notion x Wise" contrast styles, or the `localStorage` schedule engine hookups.

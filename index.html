@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What's For Today (WFTD)</title>
+
+    <!-- Typeface -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Leaflet Maps (100% free, no API key needed) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="surface-base">
+    <!-- Main Container -->
+    <main class="app-container">
+
+        <!-- Auth Screen (Demo) -->
+        <section id="auth-view" class="auth-overlay">
+            <div class="auth-surface">
+                <div id="auth-signup-layer">
+                    <h1 class="type-h2">Initialize Workspace</h1>
+                    <p class="auth-sub">Set an alias for your environment.</p>
+                    <input type="text" id="auth-alias-input" class="input-brutalist" placeholder="Your Name"
+                        autocomplete="off">
+
+                    <p class="auth-sub">Dietary Preference (Optional)</p>
+                    <input type="text" id="auth-food-input" class="input-brutalist" placeholder="e.g. Vegan, Keto"
+                        autocomplete="off">
+
+                    <p class="auth-sub">Primary Zone (Optional)</p>
+                    <input type="text" id="auth-zone-input" class="input-brutalist" placeholder="e.g. Sukhumvit"
+                        autocomplete="off">
+
+                    <p class="auth-sub">Set a 4-digit Master PIN.</p>
+                    <input type="password" id="auth-pin-setup" class="input-brutalist pin-input" maxlength="4"
+                        placeholder="----" autocomplete="off" inputmode="numeric">
+
+                    <button type="button" class="btn-solid brutal-btn" id="btn-auth-signup">Create Workspace</button>
+                </div>
+
+                <div id="auth-login-layer" class="hide">
+                    <h1 class="type-h2" id="auth-welcome-back">Workspace Locked</h1>
+                    <p class="auth-sub">Enter your PIN to resume.</p>
+                    <input type="password" id="auth-pin-login" class="input-brutalist pin-input" maxlength="4"
+                        placeholder="----" autocomplete="off" inputmode="numeric">
+
+                    <button type="button" class="btn-solid brutal-btn" id="btn-auth-login">Unlock</button>
+                    <button type="button" class="btn-ghost reset-btn" id="btn-auth-reset">Reset Workspace</button>
+                </div>
+
+                <p id="auth-error" class="feedback-txt auth-error"></p>
+            </div>
+        </section>
+
+        <!-- Landing Experience (Init State) -->
+        <section id="landing-view" class="landing-surface hide" aria-hidden="true">
+            <form id="engine-form" class="engine-form immersive-form">
+                <!-- Step 1: Goal -->
+                <div class="step-card active" data-step="1">
+                    <div class="step-content">
+                        <span class="step-counter">1 of 7</span>
+                        <label class="input-block majestic-block">
+                            <span class="label-txt majestic-label" id="step-1-label">What's your main goal for
+                                today?</span>
+                            <div class="input-majestic-wrapper">
+                                <textarea class="input-majestic textarea-majestic" name="directive"
+                                    placeholder="e.g., Deep Work, Finish Project..." rows="1"
+                                    autocomplete="off"></textarea>
+                            </div>
+                            <div class="suggestion-chips" id="goal-chips-container">
+                                <button type="button" class="chip" data-value="Deep Work (Coding/Architecture)">Deep
+                                    Code</button>
+                                <button type="button" class="chip" data-value="Fixing bugs and tech debt">Bug
+                                    Squashing</button>
+                                <button type="button" class="chip" data-value="Code Review & PRs">Code Review</button>
+                                <button type="button" class="chip" data-value="Rest & Recovery">Rest Day</button>
+                            </div>
+                            <span class="feedback-txt" id="fb-directive"></span>
+                        </label>
+                        <menu class="action-dock immersive-dock">
+                            <button type="button" class="btn-ghost skip-btn">Skip Setup</button>
+                            <button type="button" class="btn-solid next-btn">
+                                Next
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="3" stroke-linecap="round">
+                                    <path d="M5 12h14M12 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </menu>
+                    </div>
+                </div>
+
+                <!-- Step 2: People -->
+                <div class="step-card hidden-right" data-step="2">
+                    <div class="step-content">
+                        <span class="step-counter">2 of 7</span>
+                        <label class="input-block majestic-block">
+                            <span class="label-txt majestic-label">Anyone you need to meet?</span>
+                            <div class="input-majestic-wrapper">
+                                <input type="text" class="input-majestic" name="entities" list="friend-suggestions"
+                                    placeholder="e.g., Team Sync, John Doe" autocomplete="off">
+                                <datalist id="friend-suggestions">
+                                    <option value="Sarah">
+                                    <option value="Mike">
+                                    <option value="Alex">
+                                    <option value="Design Team">
+                                </datalist>
+                            </div>
+                            <div class="suggestion-chips">
+                                <button type="button" class="chip" data-value="Sarah">Sarah</button>
+                                <button type="button" class="chip" data-value="Mike">Mike</button>
+                                <button type="button" class="chip" data-value="Design Team">Design Team</button>
+                                <button type="button" class="chip" data-value="">Skip (Solo)</button>
+                            </div>
+                            <span class="feedback-txt" id="fb-entities"></span>
+                        </label>
+                        <menu class="action-dock immersive-dock">
+                            <button type="button" class="btn-ghost back-btn">Back</button>
+                            <button type="button" class="btn-solid next-btn">
+                                Next
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="3" stroke-linecap="round">
+                                    <path d="M5 12h14M12 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </menu>
+                    </div>
+                </div>
+
+                <!-- Step 3: Agenda (Conditional) -->
+                <div class="step-card hidden-right" data-step="3">
+                    <div class="step-content">
+                        <span class="step-counter">3 of 7</span>
+                        <label class="input-block majestic-block">
+                            <span class="label-txt majestic-label">What's the main agenda for meeting them?</span>
+                            <div class="input-majestic-wrapper" id="agenda-container">
+                                <input type="text" class="input-majestic" name="agenda_general"
+                                    placeholder="e.g., Performance Review, Pitch..." autocomplete="off">
+                            </div>
+                            <span class="feedback-txt" id="fb-agenda"></span>
+                        </label>
+                        <menu class="action-dock immersive-dock">
+                            <button type="button" class="btn-ghost back-btn">Back</button>
+                            <button type="button" class="btn-solid next-btn">
+                                Next
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="3" stroke-linecap="round">
+                                    <path d="M5 12h14M12 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </menu>
+                    </div>
+                </div>
+
+                <!-- Step 4: Location -->
+                <div class="step-card hidden-right" data-step="4">
+                    <div class="step-content">
+                        <span class="step-counter">4 of 7</span>
+                        <label class="input-block majestic-block">
+                            <span class="label-txt majestic-label">Where do you prefer to work today?</span>
+                            <div class="input-majestic-wrapper">
+                                <input type="text" class="input-majestic" name="location"
+                                    placeholder="e.g., Home Base, Cafe...">
+                            </div>
+                            <div class="suggestion-chips">
+                                <button type="button" class="chip" data-value="Home Base">Home Base</button>
+                                <button type="button" class="chip" data-value="Cafe">Cafe</button>
+                                <button type="button" class="chip" data-value="Co-working Space">Co-working
+                                    Space</button>
+                            </div>
+                            <span class="feedback-txt" id="fb-location"></span>
+                        </label>
+                        <menu class="action-dock immersive-dock">
+                            <button type="button" class="btn-ghost back-btn">Back</button>
+                            <button type="button" class="btn-solid next-btn">
+                                Next
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="3" stroke-linecap="round">
+                                    <path d="M5 12h14M12 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </menu>
+                    </div>
+                </div>
+
+                <!-- Step 5: Budget -->
+                <div class="step-card hidden-right" data-step="5">
+                    <div class="step-content">
+                        <span class="step-counter">5 of 7</span>
+                        <label class="input-block majestic-block">
+                            <span class="label-txt majestic-label">What's your total budget today? ($)</span>
+                            <div class="input-majestic-wrapper">
+                                <input type="number" class="input-majestic" name="capital" placeholder="e.g. 15, 50, 0"
+                                    min="0">
+                            </div>
+                            <span class="feedback-txt" id="fb-capital"></span>
+                        </label>
+                        <menu class="action-dock immersive-dock">
+                            <button type="button" class="btn-ghost back-btn">Back</button>
+                            <button type="button" class="btn-solid next-btn">
+                                Next
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="3" stroke-linecap="round">
+                                    <path d="M5 12h14M12 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </menu>
+                    </div>
+                </div>
+
+                <!-- Step 6: End of Day -->
+                <div class="step-card hidden-right" data-step="6">
+                    <div class="step-content">
+                        <span class="step-counter">6 of 7</span>
+                        <label class="input-block majestic-block">
+                            <span class="label-txt majestic-label">What time do you want to wrap up today?</span>
+                            <div class="input-majestic-wrapper">
+                                <input type="time" class="input-majestic" name="eod" value="17:00">
+                            </div>
+                            <span class="feedback-txt" id="fb-eod"></span>
+                        </label>
+                        <menu class="action-dock immersive-dock">
+                            <button type="button" class="btn-ghost back-btn">Back</button>
+                            <button type="button" class="btn-solid next-btn">
+                                Next
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="3" stroke-linecap="round">
+                                    <path d="M5 12h14M12 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </menu>
+                    </div>
+                </div>
+
+                <!-- Step 7: Extra Notes -->
+                <div class="step-card hidden-right" data-step="7">
+                    <div class="step-content">
+                        <span class="step-counter">7 of 7</span>
+                        <label class="input-block majestic-block">
+                            <span class="label-txt majestic-label" id="step-7-label">Anything else the AI should
+                                know?</span>
+                            <textarea class="input-majestic" name="notes" rows="3"
+                                placeholder="e.g. I need a gym session, low energy today, avoid back-to-back meetings..."
+                                autocomplete="off" style="resize: none; height: auto;"></textarea>
+                            <span class="feedback-txt" id="fb-notes"></span>
+                        </label>
+                        <menu class="action-dock immersive-dock">
+                            <button type="button" class="btn-ghost back-btn">Back</button>
+                            <button type="submit" class="btn-solid submit-btn">Generate Schedule <svg width="12"
+                                    height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                                    stroke-linecap="round">
+                                    <path d="M5 12h14M12 5l7 7-7 7" />
+                                </svg></button>
+                        </menu>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <!-- App Surface -->
+        <main id="app-surface" class="surface-main hide" aria-hidden="true">
+            <nav class="top-nav">
+                <div class="brand-lockup">
+                    <span class="brand-mark">WFTD</span>
+                    <span class="brand-sub">Engine</span>
+                </div>
+                <div class="nav-utils">
+                    <time id="meta-time" class="meta-txt"></time>
+                    <div class="avatar-node"></div>
+                </div>
+            </nav>
+
+            <section class="grid-layout">
+                <aside class="panel-rail">
+                    <div class="data-card">
+                        <span class="card-kicker">Status</span>
+                        <h1 id="state-directive" class="type-display">Waiting</h1>
+
+                        <dl class="telemetry-list">
+                            <div class="telemetry-row">
+                                <dt>Budget</dt>
+                                <dd id="stat-capital" class="val-green">--</dd>
+                            </div>
+                            <div class="telemetry-row">
+                                <dt>Free Time</dt>
+                                <dd id="stat-margin">--</dd>
+                            </div>
+                            <div class="telemetry-row">
+                                <dt>Meetings</dt>
+                                <dd id="stat-entities" class="val-mono">--</dd>
+                            </div>
+                        </dl>
+                    </div>
+
+                    <div class="data-card variant-subtle">
+                        <span class="card-kicker">AI Insights</span>
+                        <ul id="system-logs" class="log-list">
+                            <!-- Hydrated by engine -->
+                        </ul>
+                    </div>
+                </aside>
+
+                <section class="panel-core">
+                    <header class="core-header">
+                        <h2 class="type-h3">Your Schedule</h2>
+                        <div class="view-toggles" style="display: flex; gap: 8px;">
+                            <button class="toggle-btn" id="regenerate-btn">Regenerate</button>
+                            <button class="toggle-btn active">Timeline</button>
+                        </div>
+                    </header>
+
+                    <div class="timeline-track" id="timeline-root">
+                        <!-- Hydrated by engine -->
+                    </div>
+                </section>
+            </section>
+
+            <!-- AI Chat Panel -->
+            <aside id="chat-panel" class="chat-panel" aria-label="AI Schedule Assistant">
+                <header class="chat-header">
+                    <div>
+                        <span class="chat-title">SCHED AI</span>
+                        <span class="chat-sub">Ask me anything about your day</span>
+                    </div>
+                    <button type="button" class="btn-ghost icon-btn" id="chat-toggle-btn">↓</button>
+                </header>
+                <div class="chat-messages" id="chat-messages">
+                    <div class="chat-msg msg-ai">
+                        <span class="msg-bubble">Hey! I know your full schedule. Ask me to adjust it, or ask what's
+                            next.</span>
+                    </div>
+                </div>
+                <div class="chat-input-row">
+                    <input type="text" id="chat-input" class="chat-input" placeholder="e.g. Move lunch to 2pm..."
+                        autocomplete="off">
+                    <button type="button" id="chat-send-btn" class="chat-send-btn">→</button>
+                </div>
+            </aside>
+
+            <!-- Chat Float Toggle (shows when panel is collapsed) -->
+            <button id="chat-float-btn" class="chat-float-btn hide" title="Open AI Assistant">💬</button>
+        </main>
+
+        <!-- Schedule Detail Modal -->
+        <div id="schedule-modal" class="modal-overlay hide" aria-hidden="true">
+            <div class="modal-surface">
+                <header class="modal-header">
+                    <h3 id="modal-title" class="type-h3">Task Details</h3>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" class="btn-ghost" id="modal-edit-btn">Edit</button>
+                        <button type="button" class="btn-ghost icon-btn" id="modal-close-btn">&times;</button>
+                    </div>
+                </header>
+                <div class="modal-body">
+                    <p id="modal-desc" class="modal-desc">Task description goes here.</p>
+
+                    <div class="modal-meta-grid">
+                        <div class="meta-item">
+                            <span class="meta-label">Time</span>
+                            <span id="modal-time" class="meta-val val-mono">--:--</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Duration</span>
+                            <span id="modal-duration" class="meta-val val-mono">--</span>
+                        </div>
+                    </div>
+
+                    <div id="modal-location-container" class="modal-section hide">
+                        <span class="section-kicker">Location</span>
+                        <div id="modal-map"
+                            style="height: 160px; border: 1px solid var(--clr-chrome); border-radius: var(--radii-hard); margin-bottom: 8px; z-index: 1;">
+                        </div>
+                        <span id="modal-location" style="font-size: var(--tx-sm); color: #555;">Loading...</span>
+                        <div id="modal-smart-tips" class="pill-cluster" style="margin-top: 8px;">
+                            <!-- Filled by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Transport Options -->
+                    <div id="modal-transport-container" class="modal-section hide">
+                        <span class="section-kicker">How to Get There</span>
+                        <div id="transport-location-row"
+                            style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                            <span id="transport-from-label" style="font-size:var(--tx-sm); color:#555;">From: detecting
+                                location...</span>
+                            <button type="button" id="transport-locate-btn" class="btn-ghost"
+                                style="font-size:var(--tx-sm); padding:4px 10px;">📍 Update</button>
+                        </div>
+                        <div id="modal-transport-options" class="transport-grid">
+                            <!-- Filled by JS -->
+                        </div>
+                        <a id="modal-directions-link" href="#" target="_blank" rel="noopener"
+                            class="directions-link hide">
+                            Open in Google Maps →
+                        </a>
+                    </div>
+
+                    <div id="modal-cost-container" class="modal-section hide">
+                        <span class="section-kicker">Estimated Cost</span>
+                        <div class="cost-display">
+                            <span id="modal-cost" class="val-green">$--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script type="module" src="script.js"></script>
+</body>
+
+</html>
