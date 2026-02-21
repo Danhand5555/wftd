@@ -249,9 +249,15 @@
                     <div class="step-content">
                         <span class="step-counter">6 of 7</span>
                         <label class="input-block majestic-block">
-                            <span class="label-txt majestic-label">What time do you want to wrap up today?</span>
+                            <span class="label-txt majestic-label">When are you calling it a day?</span>
                             <div class="input-majestic-wrapper">
-                                <input type="time" class="input-majestic" name="eod" value="17:00">
+                                <input type="text" id="auth-eod-input" class="input-majestic" name="eod"
+                                    placeholder="e.g. 5:00 PM" autocomplete="off">
+                            </div>
+                            <div class="suggestion-chips">
+                                <button type="button" class="chip" data-value="5:00 PM">5:00 PM</button>
+                                <button type="button" class="chip" data-value="6:00 PM">6:00 PM</button>
+                                <button type="button" class="chip" data-value="8:00 PM">8:00 PM (LATE)</button>
                             </div>
                             <span class="feedback-txt" id="fb-eod"></span>
                         </label>

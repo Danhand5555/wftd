@@ -425,12 +425,12 @@ function _handleEodFeedback(e) {
 
 // Data Models
 const CORE_REGIMEN = [
-    { time: '0700', t: 'Morning Routine', d: 'Coffee, hydration, warm-up.', cat: 'leisure', dr: '1h', loc: 'Home Base', cost: 0 },
-    { time: '0800', t: 'Deep Work', d: 'Execution on highest priority goal.', cat: 'work', dr: '3h' },
-    { time: '1100', t: 'Break', d: 'Step away and stretch.', cat: 'leisure', dr: '1h' },
-    { time: '1200', t: 'Emails & Admin', d: 'Process messages and organize.', cat: 'work', dr: '2h' },
-    { time: '1400', t: 'Secondary Tasks', d: 'Exploratory tasks and side projects.', cat: 'work', dr: '2h', loc: 'Local Library / Desk' },
-    { time: '1600', t: 'Wind Down', d: 'Log off and rest.', cat: 'leisure', dr: 'EOD' }
+    { time: '7:00 AM', t: 'Morning Routine', d: 'Coffee, hydration, warm-up.', cat: 'leisure', dr: '1h', loc: 'Home Base', cost: 0 },
+    { time: '8:00 AM', t: 'Deep Work', d: 'Execution on highest priority goal.', cat: 'work', dr: '3h' },
+    { time: '11:00 AM', t: 'Break', d: 'Step away and stretch.', cat: 'leisure', dr: '1h' },
+    { time: '12:00 PM', t: 'Emails & Admin', d: 'Process messages and organize.', cat: 'work', dr: '2h' },
+    { time: '2:00 PM', t: 'Secondary Tasks', d: 'Exploratory tasks and side projects.', cat: 'work', dr: '2h', loc: 'Local Library / Desk' },
+    { time: '4:00 PM', t: 'Wind Down', d: 'Log off and rest.', cat: 'leisure', dr: 'EOD' }
 ];
 
 // Mutators / Handlers
@@ -477,9 +477,11 @@ USER PROFILE:
 - Currency: Always calculate in THB (Thai Baht).
 
 Format: {
-  "itinerary": [{"time":"0900","t":"Task Name","d":"Vivid description.","cat":"work","dr":"2h","loc":"Place"}],
+  "itinerary": [{"time":"9:00 AM","t":"Task Name","d":"Vivid description.","cat":"work","dr":"2h","loc":"Place"}],
   "insights": ["3-4 short high-level strategic tips about the day: e.g. travel warnings, productivity hacks for their job, or local Bangkok context"]
 }
+
+TIME FORMAT: Always use 12-hour format with AM/PM (e.g., "9:00 AM", "2:30 PM"). DO NOT use 24-hour format.
 
 YOUR JOB — FILLING THE DAY:
 The user has a primary goal but a full day to fill from morning until their EOD time. Do NOT repeat the main goal for every block. Instead:
@@ -498,7 +500,7 @@ LOCATION RULES:
 - Bad: "Pizza shop", "Nearby temple", "Local park", "Home Base"
 - Prioritise places near the user's starting location (${startLocName}), keeping travel practical.
 - For home blocks: "Home, Bangkok"
-- "cat" = "work" or "leisure". "time" = 4-digit 24h string like "0900".
+- "cat" = "work" or "leisure". "time" = 12h format like "9:00 AM".
 - For any meal blocks, suggest specific REAL Bangkok restaurants that match ${foodPref}.
 
 User data: ${JSON.stringify(payload)}${notesClause}`;
@@ -634,11 +636,11 @@ const _synthesizeItinerary = (payload) => {
     // Parse numeric
     const cap = parseInt(capital, 10) || 0;
 
-    raw.push({ time: '0830', t: 'Start Goal', d: `Focusing on: "${directive}"`, cat: 'work', dr: '30m', loc: baseLoc, tips: locTips });
+    raw.push({ time: '8:30 AM', t: 'Start Goal', d: `Focusing on: "${directive}"`, cat: 'work', dr: '30m', loc: baseLoc, tips: locTips });
 
     if (entities) {
         const entityList = entities.split(',').map(s => s.trim()).filter(s => s);
-        let currentMeetingTime = 1000;
+        let currentMeetingHour = 10;
 
         entityList.forEach((entity) => {
             const specificAgenda = payload[`agenda_${entity}`];
@@ -648,19 +650,21 @@ const _synthesizeItinerary = (payload) => {
             const meetingDesc = agenda ? `Agenda: ${agenda}` : 'Alignment sync.';
             const meetCost = cap > 200 ? 120 : (cap > 0 ? 60 : 0);
 
-            let tStr = currentMeetingTime.toString();
-            if (tStr.length === 3) tStr = '0' + tStr;
+            const tStr = currentMeetingHour >= 12
+                ? `${currentMeetingHour === 12 ? 12 : currentMeetingHour - 12}:00 PM`
+                : `${currentMeetingHour}:00 AM`;
 
             raw.push({ time: tStr, t: `Meeting with ${entity}`, d: meetingDesc, cat: 'meet', dr: '1h', loc: meetLoc, cost: meetCost, tips: locTips });
-            currentMeetingTime += 100; // Increment by 1 hr
+            currentMeetingHour += 1;
         });
 
         // Post-meeting gap
-        let postMeetStr = currentMeetingTime.toString();
-        if (postMeetStr.length === 3) postMeetStr = '0' + postMeetStr;
+        const postMeetStr = currentMeetingHour >= 12
+            ? `${currentMeetingHour === 12 ? 12 : currentMeetingHour - 12}:30 PM`
+            : `${currentMeetingHour}:30 AM`;
         raw.push({ time: postMeetStr, t: 'Post-Meeting Work', d: 'Action items processing.', cat: 'work', dr: '1.5h', loc: baseLoc });
     } else {
-        raw.push({ time: '0900', t: 'Focus Block', d: `Uninterrupted time for: ${directive}`, cat: 'work', dr: '3.5h', loc: baseLoc, tips: locTips });
+        raw.push({ time: '9:00 AM', t: 'Focus Block', d: `Uninterrupted time for: ${directive}`, cat: 'work', dr: '3.5h', loc: baseLoc, tips: locTips });
     }
 
     let lunchData = 'Lunch break and reset.';
@@ -672,11 +676,11 @@ const _synthesizeItinerary = (payload) => {
 
     const lunchCost = cap > 500 ? 450 : (cap > 0 ? 120 : 0);
 
-    raw.push({ time: '1300', t: 'Lunch Break', d: lunchData, cat: 'leisure', dr: '1h', loc: `Local Bangkok Eatery`, cost: lunchCost });
-    raw.push({ time: '1400', t: 'Secondary Tasks', d: 'Clearing intermediate tasks.', cat: 'work', dr: '2.5h', loc: baseLoc, tips: locTips });
+    raw.push({ time: '1:00 PM', t: 'Lunch Break', d: lunchData, cat: 'leisure', dr: '1h', loc: `Local Bangkok Eatery`, cost: lunchCost });
+    raw.push({ time: '2:00 PM', t: 'Secondary Tasks', d: 'Clearing intermediate tasks.', cat: 'work', dr: '2.5h', loc: baseLoc, tips: locTips });
 
-    const endTime = eod || '17:00';
-    raw.push({ time: endTime.replace(':', ''), t: 'Wind Down', d: 'End of work day. Hard stop.', cat: 'leisure', dr: 'EOD' });
+    const endTime = eod || '5:00 PM';
+    raw.push({ time: endTime, t: 'Wind Down', d: 'End of work day. Hard stop.', cat: 'leisure', dr: 'EOD' });
 
     return raw;
 };
@@ -707,7 +711,7 @@ function _mountSurface(state, itinerary, insights) {
 
     // Quick UI hack to reuse the old margin label for EOD:
     const marginNode = $('#stat-margin');
-    marginNode.textContent = state.eod || '17:00';
+    marginNode.textContent = state.eod || '5:00 PM';
     marginNode.previousElementSibling.textContent = 'Hard Stop';
 
     $('#stat-entities').textContent = state.entities || 'Null';
@@ -1054,12 +1058,13 @@ USER CONTEXT:
 - Job/Role: ${userJob} (For any new work tasks, suggest things specific to this professional background).
 - Dietary Preference: ${foodPref} (Strictly follow this for any new food/cafe suggestions).
 - Currency: Always use THB (Thai Baht).
+- Time: Use AM/PM format (e.g. 2:00 PM).
 - Location Proximity: If the user mentions a landmark/mall (e.g., "Siam Paragon", "EmQuartier"), you MUST find specific REAL restaurants or activities located INSIDE or immediately next to that specific place that match their ${foodPref} preference.
 
 You can either:
 1. Answer questions about the schedule in plain text.
 2. If the user asks to CHANGE the schedule (add, remove, move tasks), return a JSON object ONLY: {"type":"schedule_update","message":"Brief confirmation.","schedule":[...full updated array...]}
-   - The schedule array format: [{"time":"0900","t":"Task Name","d":"Description.","cat":"work","dr":"2h","loc":"Place Name", "cost": 500}]
+   - The schedule array format: [{"time":"2:00 PM","t":"Task Name","d":"Description.","cat":"work","dr":"2h","loc":"Place Name", "cost": 500}]
    - Ensure "loc" uses specific real Bangkok place names.
 3. For all other replies, just reply in plain text — no JSON.`;
 

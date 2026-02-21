@@ -499,28 +499,63 @@ input {
 .insight-item {
     font-size: var(--tx-sm);
     color: var(--clr-ink);
-    background: rgba(0, 0, 0, 0.03);
+    background: var(--clr-paper);
     border: 1px solid var(--clr-chrome);
-    padding: var(--space-12);
-    border-radius: 4px;
+    border-left: 3px solid var(--clr-brand);
+    padding: var(--space-12) var(--space-16);
+    border-radius: var(--radii-hard);
     display: flex;
-    gap: var(--space-8);
-    line-height: 1.4;
-    transition: transform 0.2s, background 0.2s;
+    gap: var(--space-12);
+    line-height: 1.5;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s var(--ease-snappy);
+    position: relative;
+    overflow: hidden;
 }
 
 .insight-item:hover {
-    background: var(--clr-paper);
-    transform: translateX(4px);
+    transform: translateY(-2px) translateX(4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+    background: #fff;
 }
 
 .insight-icon {
     flex-shrink: 0;
-    font-size: 16px;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: iconPulse 2s infinite ease-in-out;
+}
+
+@keyframes iconPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+
+    50% {
+        transform: scale(1.15);
+        opacity: 1;
+    }
 }
 
 .insight-text {
     flex: 1;
+    font-weight: 500;
+}
+
+.insight-item::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 40px;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(55, 231, 199, 0.05));
+    pointer-events: none;
 }
 
 /* Core Panel / Timeline Tree */
