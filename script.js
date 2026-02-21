@@ -921,6 +921,15 @@ function _openDetailModal(data, idx) {
                 const bangkokLat = 13.7563, bangkokLon = 100.5018;
 
                 const tryGeocode = async (query) => {
+                    // 0. Handle "Home Base" Special Case
+                    const lower = (query || '').toLowerCase();
+                    if (lower.includes('home base') || lower === 'home' || lower === 'house' || lower === 'home, bangkok') {
+                        const sLat = parseFloat($('#loc-hidden-lat')?.value || 13.7563);
+                        const sLon = parseFloat($('#loc-hidden-lon')?.value || 100.5018);
+                        const sName = $('#loc-hidden-name')?.value || 'Home Base';
+                        return { lat: sLat, lon: sLon, display_name: `${sName}` };
+                    }
+
                     // Try Photon first (better for restaurant/POI names)
                     try {
                         const photonRes = await fetch(
@@ -953,7 +962,7 @@ function _openDetailModal(data, idx) {
 
                 // Try full name, then just the primary name (before first comma)
                 let result = await tryGeocode(data.loc);
-                if (!result && data.loc.includes(',')) {
+                if (!result && data.loc && data.loc.includes(',')) {
                     result = await tryGeocode(data.loc.split(',')[0].trim());
                 }
 
@@ -1439,11 +1448,12 @@ The user has a primary goal but a full day to fill from morning until their EOD 
 ${startLocClause}
 
 LOCATION RULES:
-- Use REAL, SPECIFIC, SEARCHABLE place names on OpenStreetMap.
-- Good: "Wat Suthat Thepwararam", "Bookmoby Ekkamai", "The Commons Thonglor", "Paper Butter & The Burger Ari"
-- Bad: "Pizza shop", "Nearby temple", "Local park", "Home Base"
+- Use REAL, SPECIFIC, SEARCHABLE place names on OpenStreetMap for ALL public locations.
+- **HOME TRAP**: If an activity happens at the user's starting location (e.g., waking up, breakfast at home, working from home, or ending the day), you MUST use the EXACT string "Home Base" as the "loc" value.
+- NEVER suggest "Home, Bangkok" or generic "House". Use "Home Base".
+- Good public places: "Wat Suthat Thepwararam", "Bookmoby Ekkamai", "The Commons Thonglor", "Paper Butter & The Burger Ari"
+- Bad: "Pizza shop", "Nearby temple", "Local park"
 - Prioritise places near the user's starting location (${startLocName}), keeping travel practical.
-- For home blocks: "Home, Bangkok"
 - "cat" = "work" or "leisure". "time" = 12h format like "9:00 AM".
 - For any meal blocks, suggest specific REAL Bangkok restaurants that match ${foodPref}.
 
