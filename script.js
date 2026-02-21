@@ -197,7 +197,7 @@ function _unlockWorkspace(alias) {
         if (step1Label) {
             step1Label.textContent = `What's your main goal for today, ${alias}?`;
         }
-        _renderGoalChips();
+        _renderAllStepSuggestions();
 
 
         // Focus first input automatically
@@ -208,38 +208,56 @@ function _unlockWorkspace(alias) {
     }, 600); // Wait for transition
 }
 
-// Helper to suggest appropriate chips based on job
-async function _renderGoalChips() {
+// Helper to suggest appropriate chips based on job for Step 1 and Step 2
+async function _renderAllStepSuggestions() {
     const job = localStorage.getItem('wftd_job') || 'Professional';
-    const container = $('#goal-chips-container');
-    if (!container) return;
+    const goalContainer = $('#goal-chips-container');
+    const meetContainer = $('#meet-chips-container');
+    if (!goalContainer || !meetContainer) return;
 
-    // 1. Set fast fallbacks while AI thinks
+    // 1. Static Fallbacks (Immediate)
     const fallbacks = {
-        'finance': [{ label: 'Market Analysis', val: 'Execute full market analysis and risk report' }, { label: 'Risk Review', val: 'Reviewing portfolio risk and exposure' }],
-        'design': [{ label: 'Moodboard', val: 'Curation and visual research' }, { label: 'UI Prep', val: 'High-fidelity wireframing' }],
-        'engineer': [{ label: 'Deep Code', val: 'Focused architecture and coding' }, { label: 'Bug Hunt', val: 'Fixing critical technical debt' }],
-        'default': [{ label: 'Deep Work', val: 'Focus on highest priority outcome' }, { label: 'Planning', val: 'Strategic planning for the week' }]
+        'finance': {
+            goals: [{ label: 'Market Analysis', val: 'Execute full market analysis and risk report' }, { label: 'Risk Review', val: 'Reviewing portfolio risk and exposure' }],
+            meets: [{ label: 'Risk Team', val: 'Risk Management Team' }, { label: 'LPs', val: 'Limited Partners' }, { label: 'Analysts', val: 'Equity Analysts' }]
+        },
+        'design': {
+            goals: [{ label: 'Moodboard', val: 'Curation and visual research' }, { label: 'UI Prep', val: 'High-fidelity wireframing' }],
+            meets: [{ label: 'Design Team', val: 'Design Team' }, { label: 'Product Mgr', val: 'Product Manager' }, { label: 'Dev Sync', val: 'Engineering Team' }]
+        },
+        'engineer': {
+            goals: [{ label: 'Deep Code', val: 'Focused architecture and coding' }, { label: 'Bug Hunt', val: 'Fixing critical technical debt' }],
+            meets: [{ label: 'Standup', val: 'Team Standup' }, { label: 'DevOps', val: 'DevOps Team' }, { label: 'QA Team', val: 'QA/Testing Team' }]
+        },
+        'default': {
+            goals: [{ label: 'Deep Work', val: 'Focus on highest priority outcome' }, { label: 'Planning', val: 'Strategic planning for the week' }],
+            meets: [{ label: 'Team', val: 'Core Team' }, { label: 'Manager', val: 'Manager' }, { label: 'Client', val: 'Client' }]
+        }
     };
 
     const category = Object.keys(fallbacks).find(k => job.toLowerCase().includes(k)) || 'default';
-    let currentChips = [...fallbacks[category], { label: 'Rest Day', val: 'Rest and mental recovery' }];
+    const initialGoals = [...fallbacks[category].goals, { label: 'Rest Day', val: 'Rest and mental recovery' }];
+    const initialMeets = [...fallbacks[category].meets, { label: 'Skip (Solo)', val: '' }];
 
-    const render = (list) => {
+    const render = (container, list) => {
         container.innerHTML = list.map(c => `<button type="button" class="chip" data-value="${c.val}">${c.label}</button>`).join('');
     };
 
-    render(currentChips);
+    render(goalContainer, initialGoals);
+    render(meetContainer, initialMeets);
 
-    // 2. Fetch AI-powered hyper-specific chips
+    // 2. AI Upgrade (Hyper-personalized)
     try {
         const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
         if (!apiKey || apiKey.includes('YOUR_')) return;
 
-        const prompt = `Generate 4 short, punchy "goal" suggestion chips for a ${job}. 
-        Return ONLY a JSON array of 4 objects: [{"label": "Short Action", "val": "Full descriptive task for AI"}].
-        Example for Lawyer: [{"label":"Drafting","val":"Drafting legal notices and contracts"}]
-        Maximum 2 words for labels.`;
+        const prompt = `Generate suggestion chips for a ${job} for two steps in a scheduling app.
+        Return ONLY a JSON object: {
+            "goals": [{"label": "Action", "val": "Full descriptive task"}], 
+            "meets": [{"label": "Who", "val": "Full name/team"}]
+        }
+        Generate 4 items per list. Maximum 2 words for labels.
+        "meets" should be colleagues/teams/clients relevant to a ${job}.`;
 
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`, {
             method: 'POST',
@@ -250,12 +268,19 @@ async function _renderGoalChips() {
         if (res.ok) {
             const data = await res.json();
             const text = data.candidates[0].content.parts[0].text.trim().replace(/```json/g, '').replace(/```/g, '');
-            const aiChips = JSON.parse(text);
-            aiChips.push({ label: 'Rest Day', val: 'Rest and mental recovery' });
-            render(aiChips);
+            const aiData = JSON.parse(text);
+
+            if (aiData.goals) {
+                aiData.goals.push({ label: 'Rest Day', val: 'Rest and mental recovery' });
+                render(goalContainer, aiData.goals);
+            }
+            if (aiData.meets) {
+                aiData.meets.push({ label: 'Skip (Solo)', val: '' });
+                render(meetContainer, aiData.meets);
+            }
         }
     } catch (e) {
-        console.warn('AI Chips failed, sticking with fallbacks', e);
+        console.warn('AI Suggestions failed', e);
     }
 }
 
