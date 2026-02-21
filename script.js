@@ -121,7 +121,8 @@ function _initAuth() {
         localStorage.removeItem('wftd_alias');
         localStorage.removeItem('wftd_pin');
         localStorage.removeItem('wftd_food');
-        localStorage.removeItem('wftd_zone');
+        localStorage.removeItem('wftd_today_schedule');
+        localStorage.removeItem('wftd_today_date');
         location.reload();
     });
 }
@@ -141,12 +142,10 @@ function _handleSignup() {
     }
 
     const food = $('#auth-food-input').value.trim();
-    const zone = $('#auth-zone-input').value.trim();
 
     localStorage.setItem('wftd_alias', alias);
     localStorage.setItem('wftd_pin', pin);
     if (food) localStorage.setItem('wftd_food', food);
-    if (zone) localStorage.setItem('wftd_zone', zone);
 
     _unlockWorkspace(alias);
 }
@@ -331,8 +330,9 @@ function _handleBudgetFeedback(e) {
 
     let msg = '';
     if (val === 0) msg = 'Zero spend? Respect the grind.';
-    else if (val > 0 && val <= 20) msg = 'Lean operations. Smart.';
-    else if (val > 20) msg = 'Big baller! Treat yourself today.';
+    else if (val > 0 && val <= 500) msg = 'Lean operations. Smart choices.';
+    else if (val > 500 && val <= 2000) msg = 'Solid budget. Real local luxury.';
+    else if (val > 2000) msg = 'Big baller! Treat yourself today.';
 
     _showFeedback('fb-capital', msg);
 }
@@ -378,18 +378,21 @@ async function _handleCompile(e) {
             itinerary = _synthesizeItinerary(payload);
         } else {
             const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
-            const savedZone = localStorage.getItem('wftd_zone') || 'Bangkok';
+            const foodPref = localStorage.getItem('wftd_food') || 'No specific dietary restrictions';
 
             // Pick up the chosen starting location from Step 4
-            const startLocName = $('#loc-hidden-name')?.value || savedZone;
+            const startLocName = $('#loc-hidden-name')?.value || 'Bangkok';
             const startLat = $('#loc-hidden-lat')?.value;
             const startLon = $('#loc-hidden-lon')?.value;
             const startLocClause = (startLat && startLon)
                 ? `\nUser's STARTING LOCATION for today: "${startLocName}" (lat: ${startLat}, lon: ${startLon}). All suggested places should be reasonably reachable from this point.`
-                : `\nUser's base area: ${savedZone}, Bangkok.`;
+                : `\nUser's location: ${startLocName}, Bangkok.`;
 
             const notesClause = payload.notes ? `\n\nExtra user instructions: ${payload.notes}` : '';
-            const prompt = `You are a creative, insightful personal scheduler for a user in ${savedZone}, Bangkok, Thailand. Return ONLY a raw JSON array of schedule objects — no markdown, no extra text.
+            const prompt = `You are a creative, insightful personal scheduler for a user in Bangkok, Thailand. Return ONLY a raw JSON array of schedule objects — no markdown, no extra text.
+            
+DIETARY PREFERENCE: ${foodPref} (Crucial: all food/restaurant suggestions MUST prioritize and strictly follow this preference).
+CURRENCY: Always calculate in THB (Thai Baht).
 
 Format: [{"time":"0900","t":"Task Name","d":"Vivid one-sentence description.","cat":"work","dr":"2h","loc":"Real Place Name"}]
 
@@ -408,9 +411,10 @@ LOCATION RULES:
 - Use REAL, SPECIFIC, SEARCHABLE place names on OpenStreetMap.
 - Good: "Wat Suthat Thepwararam", "Bookmoby Ekkamai", "The Commons Thonglor", "Paper Butter & The Burger Ari"
 - Bad: "Pizza shop", "Nearby temple", "Local park", "Home Base"
-- Prioritise places near the user's starting location, keeping travel practical.
-- For home blocks: "Home, ${startLocName}, Bangkok"
+- Prioritise places near the user's starting location (${startLocName}), keeping travel practical.
+- For home blocks: "Home, Bangkok"
 - "cat" = "work" or "leisure". "time" = 4-digit 24h string like "0900".
+- For any meal blocks, suggest specific REAL Bangkok restaurants that match ${foodPref}.
 
 User data: ${JSON.stringify(payload)}${notesClause}`;
 
@@ -508,7 +512,6 @@ const _synthesizeItinerary = (payload) => {
     let meetLoc = 'Coffee Shop / Office';
     let locTips = [];
 
-    const savedZone = localStorage.getItem('wftd_zone') || 'Local';
     const savedFood = localStorage.getItem('wftd_food') || '';
 
     if (location) {
@@ -517,25 +520,14 @@ const _synthesizeItinerary = (payload) => {
             baseLoc = location;
             meetLoc = location;
             locTips = [
-                { l: 'Transport', v: `BTS/Walk from ${savedZone}` },
-                { l: 'Wifi', v: 'Variable (Check Reviews)' },
+                { l: 'Transport', v: `Local BTS/Walk` },
+                { l: 'Wifi', v: 'Variable' },
                 { l: 'Plugs', v: 'Arrive early' }
             ];
-        } else if (l.includes('co-working') || l.includes('coworking') || l.includes('work space')) {
-            baseLoc = location;
-            meetLoc = location;
-            locTips = [
-                { l: 'Transport', v: `Commute from ${savedZone}` },
-                { l: 'Wifi', v: 'High Speed' },
-                { l: 'Plugs', v: 'Abundant' }
-            ];
         } else if (l.includes('home')) {
-            baseLoc = location;
+            baseLoc = 'Home Base';
             meetLoc = 'Virtual / Zoom';
-            locTips = [
-                { l: 'Wifi', v: 'Stable' },
-                { l: 'Vibe', v: 'Comfortable' }
-            ];
+            locTips = [{ l: 'Wifi', v: 'Stable' }];
         } else {
             baseLoc = location;
             meetLoc = location;
@@ -557,7 +549,7 @@ const _synthesizeItinerary = (payload) => {
             const agenda = specificAgenda !== undefined ? specificAgenda : generalAgenda;
 
             const meetingDesc = agenda ? `Agenda: ${agenda}` : 'Alignment sync.';
-            const meetCost = cap > 20 ? 15 : (cap > 0 ? 5 : 0);
+            const meetCost = cap > 200 ? 120 : (cap > 0 ? 60 : 0);
 
             let tStr = currentMeetingTime.toString();
             if (tStr.length === 3) tStr = '0' + tStr;
@@ -575,15 +567,15 @@ const _synthesizeItinerary = (payload) => {
     }
 
     let lunchData = 'Lunch break and reset.';
-    if (cap > 0 && cap < 20) {
-        lunchData = 'Consider packing lunch to save budget.';
+    if (cap > 0 && cap < 50) {
+        lunchData = 'Street food or packing lunch to save budget.';
     } else if (savedFood) {
-        lunchData = `Checking ${savedZone} for top ${savedFood} spots.`;
+        lunchData = `Enjoying a spot that suits your ${savedFood} preference.`;
     }
 
-    const lunchCost = cap > 20 ? 25 : (cap > 0 ? 10 : 0);
+    const lunchCost = cap > 500 ? 450 : (cap > 0 ? 120 : 0);
 
-    raw.push({ time: '1300', t: 'Lunch Break', d: lunchData, cat: 'leisure', dr: '1h', loc: `${savedZone} Eatery`, cost: lunchCost });
+    raw.push({ time: '1300', t: 'Lunch Break', d: lunchData, cat: 'leisure', dr: '1h', loc: `Local Bangkok Eatery`, cost: lunchCost });
     raw.push({ time: '1400', t: 'Secondary Tasks', d: 'Clearing intermediate tasks.', cat: 'work', dr: '2.5h', loc: baseLoc, tips: locTips });
 
     const endTime = eod || '17:00';
@@ -898,7 +890,7 @@ function _openDetailModal(data, idx) {
 
     const costContainer = $('#modal-cost-container');
     if (typeof data.cost === 'number' && data.cost > 0) {
-        $('#modal-cost').textContent = `$${data.cost}`;
+        $('#modal-cost').textContent = `${data.cost} THB`;
         costContainer.classList.remove('hide');
     } else {
         costContainer.classList.add('hide');
@@ -952,12 +944,19 @@ async function _sendChatMessage() {
 
     chatHistory.push({ role: 'user', text: userText });
 
+    const foodPref = localStorage.getItem('wftd_food') || 'No restrictions';
     const systemPrompt = `You are SCHED AI, a sharp schedule assistant embedded in a productivity app called WFTD. The user's full schedule for today is: ${scheduleContext}. 
+
+USER CONTEXT:
+- Dietary Preference: ${foodPref} (Strictly follow this for any new food/cafe suggestions).
+- Currency: Always use THB (Thai Baht).
+- Location Proximity: If the user mentions a landmark/mall (e.g., "Siam Paragon", "EmQuartier"), you MUST find specific REAL restaurants or activities located INSIDE or immediately next to that specific place that match their ${foodPref} preference.
 
 You can either:
 1. Answer questions about the schedule in plain text.
 2. If the user asks to CHANGE the schedule (add, remove, move tasks), return a JSON object ONLY: {"type":"schedule_update","message":"Brief confirmation.","schedule":[...full updated array...]}
-   The schedule array format: [{"time":"0900","t":"Task Name","d":"Description.","cat":"work","dr":"2h","loc":"Place"}]
+   - The schedule array format: [{"time":"0900","t":"Task Name","d":"Description.","cat":"work","dr":"2h","loc":"Place Name", "cost": 500}]
+   - Ensure "loc" uses specific real Bangkok place names.
 3. For all other replies, just reply in plain text — no JSON.`;
 
     try {
