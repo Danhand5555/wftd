@@ -685,20 +685,34 @@ const _synthesizeItinerary = (payload) => {
     return raw;
 };
 
-const _generateTelemetryLogs = ({ capital, eod, entities, directive }) => {
-    const logs = [];
-    const cap = parseInt(capital, 10);
+// -----------------------------------------
+// DOM Renderer Helper
+// -----------------------------------------
+const _formatTo12h = (timeStr) => {
+    if (!timeStr) return '';
+    // If already has AM/PM, return as is
+    if (timeStr.toLowerCase().includes('am') || timeStr.toLowerCase().includes('pm')) return timeStr;
 
-    if (cap > 0 && cap < 30) logs.push('Low budget today. Spend carefully.');
-    if (directive.length > 5) logs.push('Absolute beast mode goals today.');
-    if (entities) logs.push(`Networking sync activated: ${entities}`);
-    if (eod) logs.push(`Hard stop requested precisely at ${eod}.`);
-    if (logs.length === 0) logs.push('Schedule looks legendary. Have a good day!');
+    let totalMinutes = 0;
+    if (timeStr.includes(':')) {
+        const [h, m] = timeStr.split(':');
+        totalMinutes = parseInt(h, 10) * 60 + parseInt(m, 10);
+    } else {
+        // Handle "0900" or "1330"
+        const h = parseInt(timeStr.substring(0, timeStr.length - 2), 10);
+        const m = parseInt(timeStr.substring(timeStr.length - 2), 10);
+        totalMinutes = h * 60 + m;
+    }
 
-    return logs;
+    const h = Math.floor(totalMinutes / 60);
+    const m = totalMinutes % 60;
+    const suffix = h >= 12 ? 'PM' : 'AM';
+    const displayH = h % 12 || 12;
+    const displayM = m.toString().padStart(2, '0');
+
+    return `${displayH}:${displayM} ${suffix}`;
 };
 
-// DOM Renderer
 function _mountSurface(state, itinerary, insights) {
     // 1. Hide Landing View
     const landing = $('#landing-view');
@@ -707,14 +721,14 @@ function _mountSurface(state, itinerary, insights) {
 
     // 2. Hydrate Telemetry
     $('#state-directive').textContent = state.directive;
-    $('#stat-capital').textContent = state.capital ? `$${state.capital}` : 'None';
+    $('#stat-capital').textContent = state.capital ? `${state.capital} THB` : 'None';
 
     // Quick UI hack to reuse the old margin label for EOD:
     const marginNode = $('#stat-margin');
-    marginNode.textContent = state.eod || '5:00 PM';
+    marginNode.textContent = _formatTo12h(state.eod) || '5:00 PM';
     marginNode.previousElementSibling.textContent = 'Hard Stop';
 
-    $('#stat-entities').textContent = state.entities || 'Null';
+    $('#stat-entities').textContent = state.entities || 'Solo Session';
 
     // 3. Hydrate Logs (Insights)
     const logContainer = $('#system-logs');
@@ -729,7 +743,7 @@ function _mountSurface(state, itinerary, insights) {
     const track = $('#timeline-root');
     track.innerHTML = itinerary.map((node, i) => `
         <article class="track-node" data-index="${i}" style="animation-delay: ${i * 0.12}s; cursor: pointer;" data-info="${JSON.stringify(node).replace(/"/g, '&quot;')}">
-            <time class="node-meta">${node.time}</time>
+            <time class="node-meta">${_formatTo12h(node.time)}</time>
             <div class="node-surface">
                 <h3>${node.t}</h3>
                 <p>${node.d}</p>
