@@ -1,20 +1,21 @@
 # WFTD — What's For Today
 
-> **An AI-powered daily schedule generator for Bangkok.** Tell it your goal, and it builds your entire day — real places, live map, transport times, and a chat assistant that can rewrite your schedule on the fly.
+> **An AI-powered daily schedule generator for Bangkok.** Tell it your goal and your professional role, and it builds your entire day — real places, live map, strategic insights, and an AI chat assistant.
 
 ---
 
 ## ✦ What It Does
 
-You answer 7 quick questions. The AI builds a full, rich day for you.
+You answer a few quick questions about your day. The AI builds a full, rich, job-specific schedule for you.
 
-- **Understands your goal** — Novel writing? Deep work? Rest day? It tailors the whole day.
-- **Fills every hour** — Not just your main task. It infers your interests and suggests complementary activities (temples, cafés, bookshops, parks).
-- **Uses real places** — Every location is a real, searchable Bangkok venue pinned on a live map.
-- **Shows you how to get there** — Walk, BTS/MRT, Grab, or motorbike. Estimated times from your actual GPS location. One tap opens Google Maps.
-- **Lives with you** — The schedule tracks real time. Past blocks fade, current block pulses.
-- **Lets you edit** — Tap any block to edit time, duration, or description in place.
-- **Has a chat assistant** — Ask it questions or tell it to change your schedule. It rewrites the timeline instantly.
+- **Professional Personalization** — Tell it you're a "Hedge Fund Manager" or "Architect", and it suggests work tasks and teammates (LPs, Risk Team, Site Syncs) specific to your field.
+- **Dynamic AI Suggestions** — The onboarding flow uses Gemini to generate hyper-personalized goal and meeting suggestions live as you sign up.
+- **Strategic AI Insights** — Beyond the timeline, look at the sidebar for high-level advice on productivity, travel, and local context tailored to your day.
+- **Strict 12h AM/PM Format** — Clean, human-readable time formatting enforced across all AI generations and UI displays.
+- **Dietary & Proximity Intelligence** — AI suggests real Bangkok restaurants that strictly match your dietary preferences (Vegan, Keto, etc.) located near your starting point.
+- **Uses real places** — Every location is a real venue pinned on a live map with one-tap Google Maps navigation.
+- **Lives with you** — The schedule tracks real time. Past blocks fade, current block pulses with a focus glow.
+- **Has a chat assistant** — Ask SCHED AI to shift your meetings, find a nearby lunch spot, or rewrite the whole day instantly.
 
 ---
 
@@ -29,9 +30,9 @@ You answer 7 quick questions. The AI builds a full, rich day for you.
 | Geocoding | [Photon by Komoot](https://photon.komoot.io/) + [Nominatim](https://nominatim.openstreetmap.org/) |
 | Geolocation | Browser `navigator.geolocation` API |
 | Persistence | `localStorage` |
-| Fonts | [Inter — Google Fonts](https://fonts.google.com/specimen/Inter) |
+| UI/UX | Premium Brutalist · Custom Micro-animations · Interactive Map |
 
-**Zero backend. Zero database. Zero paid map API.**
+**Zero backend. Zero database. Local-first performance.**
 
 ---
 
@@ -76,66 +77,37 @@ Open `http://localhost:5173` in your browser.
 
 ## ✦ How the AI Works
 
-### Schedule Generation
+### Schedule & Strategy Generation
 
-The system prompt tells Gemini to:
+The system prompt tells Gemini to return a structured JSON object including:
 
-1. Give the main goal its dedicated block(s)
-2. Infer the user's personality from their goal and suggest enriching complementary activities
-3. Use **real, searchable Bangkok venue names** (never "Pizza shop" or "Nearby café")
-4. Fill every hour from wake time to EOD — 8–12 blocks minimum
-5. Always include morning routine, all meals, and wind-down
+1.  **`itinerary`**: A full day of 8–12 blocks from morning routine to EOD.
+2.  **`insights`**: 3–4 high-level strategic tips (Productivity hacks, travel alerts, or local tips).
 
-**Model:** `gemini-2.5-flash-lite` — chosen for lowest cost while maintaining JSON output quality.
+**Rules followed by AI:**
+- Use **12-hour AM/PM format** strictly.
+- Suggest **Job-Specific** work activities (never generic "Work").
+- Respect **Dietary Preferences** for all restaurant suggestions.
+- Calculate costs in **THB (Thai Baht)**.
+- Use **Real, Searchable Place Names** from OSM.
 
-### Chat Assistant (SCHED AI)
+### Dynamic Suggestions System
 
-The chat panel passes the user's full schedule as context on every message. Gemini can:
+The onboarding chips are powered by a hybrid engine:
+- **Instant Fallback**: Logic-based chips for core categories (Tech, Finance, Design, Legal).
+- **AI Upgrade**: Gemini generates 4 hyper-specific suggestions for whatever job title you type, swapping them in live.
 
-- Answer questions about the schedule in plain text
-- Return a structured `{ type: "schedule_update", schedule: [...] }` JSON when asked to change something, which instantly re-renders the timeline
-
-### Location Resolution
+### Location & Transport
 
 ```
-AI outputs "loc": "Supanniga Eating Room, Sathorn"
+AI outputs "loc": "Dining Room at The House on Sathorn"
          ↓
 Photon geocoder (POI-optimized, Bangkok-biased)
-         ↓ (if not found)
-Nominatim fallback (countrycodes=th)
-         ↓ (if not found)  
-Shorter name retry ("Supanniga Eating Room")
          ↓
-Pin dropped on Leaflet/OSM map at zoom 16
-```
-
-### Transport Routing
-
-```
-GPS distance (Haversine) × 1.4 road factor
+Haversine GPS distance calculation
          ↓
-Bangkok-tuned speeds:
-  🚶 Walk      4.5 km/h
-  🚇 BTS/MRT   28 km/h  (+10 min station walk)
-  🚗 Grab      18 km/h  (+5 min wait)
-  🛵 Motorbike 22 km/h
-         ↓
-Clickable cards → Google Maps with correct travel mode
-```
-
----
-
-## ✦ File Structure
-
-```
-wftd/
-├── index.html        All markup: Auth · Form · Dashboard · Modal · Chat
-├── styles.css        Design system: Brutalist/Notion × Wise aesthetic
-├── script.js         Engine: Auth · Gemini API · Schedule · Maps · Chat · Transport
-├── .env              Your API key (gitignored)
-├── .env.example      Safe template for collaborators
-├── package.json      Vite only — no other dependencies
-└── README.md
+Bangkok-tuned Transport Engine:
+  🚶 Walk (4.5 km/h) | 🚇 BTS/MRT | 🚗 Grab | 🛵 Motorbike
 ```
 
 ---
@@ -152,25 +124,24 @@ npm run preview  # Preview production build locally
 
 ## ✦ Cost
 
-For a daily personal use app this is essentially free:
+For a daily personal use app, this is essentially free:
 
 | Service | Cost |
 |---------|------|
-| Gemini 2.5 Flash Lite | ~$0.00–$0.01 per schedule |
+| Gemini 2.5 Flash Lite | Free Tier (up to 15 RPM) |
 | Leaflet + OpenStreetMap | Free forever |
-| Photon geocoder | Free forever |
-| Nominatim | Free (fair use) |
-| Browser Geolocation API | Free |
+| Geocoding APIs | Free (Fair Use) |
 
 ---
 
 ## ✦ Roadmap
 
+- [x] Hyper-personalized AI roles
+- [x] Strategic AI Insight Cards
+- [x] Standardized AM/PM & THB
 - [ ] PWA / Add to Home Screen support
 - [ ] Multiple saved schedules (history)
 - [ ] Share schedule as link
-- [ ] Push notification reminders for each block
-- [ ] Offline fallback without API key
 
 ---
 

@@ -477,7 +477,7 @@ USER PROFILE:
 - Currency: Always calculate in THB (Thai Baht).
 
 Format: {
-  "itinerary": [{"time":"9:00 AM","t":"Task Name","d":"Vivid description.","cat":"work","dr":"2h","loc":"Place"}],
+  "itinerary": [{"time":"9:00 AM","t":"Task Name","d":"Vivid description.","cat":"work","dr":"2h","loc":"Place", "cost": 500, "cost_range": "300-700 THB"}],
   "insights": ["3-4 short high-level strategic tips about the day: e.g. travel warnings, productivity hacks for their job, or local Bangkok context"]
 }
 
@@ -654,7 +654,9 @@ const _synthesizeItinerary = (payload) => {
                 ? `${currentMeetingHour === 12 ? 12 : currentMeetingHour - 12}:00 PM`
                 : `${currentMeetingHour}:00 AM`;
 
-            raw.push({ time: tStr, t: `Meeting with ${entity}`, d: meetingDesc, cat: 'meet', dr: '1h', loc: meetLoc, cost: meetCost, tips: locTips });
+            const costRange = meetCost > 0 ? `${Math.floor(meetCost * 0.8)}-${Math.ceil(meetCost * 1.5)} THB` : null;
+
+            raw.push({ time: tStr, t: `Meeting with ${entity}`, d: meetingDesc, cat: 'meet', dr: '1h', loc: meetLoc, cost: meetCost, cost_range: costRange, tips: locTips });
             currentMeetingHour += 1;
         });
 
@@ -675,8 +677,9 @@ const _synthesizeItinerary = (payload) => {
     }
 
     const lunchCost = cap > 500 ? 450 : (cap > 0 ? 120 : 0);
+    const lunchRange = lunchCost > 0 ? `${Math.floor(lunchCost * 0.8)}-${Math.ceil(lunchCost * 1.5)} THB` : null;
 
-    raw.push({ time: '1:00 PM', t: 'Lunch Break', d: lunchData, cat: 'leisure', dr: '1h', loc: `Local Bangkok Eatery`, cost: lunchCost });
+    raw.push({ time: '1:00 PM', t: 'Lunch Break', d: lunchData, cat: 'leisure', dr: '1h', loc: `Local Bangkok Eatery`, cost: lunchCost, cost_range: lunchRange });
     raw.push({ time: '2:00 PM', t: 'Secondary Tasks', d: 'Clearing intermediate tasks.', cat: 'work', dr: '2.5h', loc: baseLoc, tips: locTips });
 
     const endTime = eod || '5:00 PM';
@@ -880,7 +883,7 @@ function _bindModalEvents() {
                     localStorage.setItem('wftd_today_schedule', JSON.stringify(saved));
 
                     // Re-render the timeline in the background seamlessly
-                    _mountSurface(saved.state, saved.itinerary, saved.insights);
+                    _mountSurface(saved.state || {}, saved.itinerary, saved.insights || []);
                 }
             } catch (err) { console.error('Error saving edits', err); }
 
@@ -949,7 +952,7 @@ function _openDetailModal(data, idx) {
                             `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&lat=${bangkokLat}&lon=${bangkokLon}&limit=1&lang=en`
                         );
                         const photonData = await photonRes.json();
-                        if (photonData.features && photonData.features[0]) {
+                        if (photonData.features && photonData.features.length > 0) {
                             const [lon, lat] = photonData.features[0].geometry.coordinates;
                             const props = photonData.features[0].properties;
                             const name = props.name || props.street || query;
@@ -1009,13 +1012,14 @@ function _openDetailModal(data, idx) {
     }
 
     const costContainer = $('#modal-cost-container');
-    if (typeof data.cost === 'number' && data.cost > 0) {
-        $('#modal-cost').textContent = `${data.cost} THB`;
+    const displayCost = data.cost_range || (typeof data.cost === 'number' && data.cost > 0 ? `${data.cost} THB` : null);
+
+    if (displayCost) {
+        $('#modal-cost').textContent = displayCost;
         costContainer.classList.remove('hide');
     } else {
         costContainer.classList.add('hide');
     }
-
     modal.classList.remove('hide');
     modal.setAttribute('aria-hidden', 'false');
 }
@@ -1078,7 +1082,7 @@ USER CONTEXT:
 You can either:
 1. Answer questions about the schedule in plain text.
 2. If the user asks to CHANGE the schedule (add, remove, move tasks), return a JSON object ONLY: {"type":"schedule_update","message":"Brief confirmation.","schedule":[...full updated array...]}
-   - The schedule array format: [{"time":"2:00 PM","t":"Task Name","d":"Description.","cat":"work","dr":"2h","loc":"Place Name", "cost": 500}]
+   - The schedule array format: [{"time":"2:00 PM","t":"Task Name","d":"Description.","cat":"work","dr":"2h","loc":"Place Name", "cost": 500, "cost_range": "400-800 THB"}]
    - Ensure "loc" uses specific real Bangkok place names.
 3. For all other replies, just reply in plain text — no JSON.`;
 
