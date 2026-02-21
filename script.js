@@ -388,6 +388,15 @@ async function _handleCompile(e) {
         } else {
             const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
             const savedZone = localStorage.getItem('wftd_zone') || 'Bangkok';
+
+            // Pick up the chosen starting location from Step 4
+            const startLocName = $('#loc-hidden-name')?.value || savedZone;
+            const startLat = $('#loc-hidden-lat')?.value;
+            const startLon = $('#loc-hidden-lon')?.value;
+            const startLocClause = (startLat && startLon)
+                ? `\nUser's STARTING LOCATION for today: "${startLocName}" (lat: ${startLat}, lon: ${startLon}). All suggested places should be reasonably reachable from this point.`
+                : `\nUser's base area: ${savedZone}, Bangkok.`;
+
             const notesClause = payload.notes ? `\n\nExtra user instructions: ${payload.notes}` : '';
             const prompt = `You are a creative, insightful personal scheduler for a user in ${savedZone}, Bangkok, Thailand. Return ONLY a raw JSON array of schedule objects — no markdown, no extra text.
 
@@ -402,13 +411,14 @@ The user has a primary goal but a full day to fill from morning until their EOD 
 3. Always include: morning routine, meals (breakfast, lunch, dinner at real Bangkok restaurants), wind-down.
 4. The schedule MUST cover the full day from ~0700 to the user's EOD time with NO large gaps.
 5. Aim for 8–12 blocks total. Make the day feel RICH and COMPLETE.
+${startLocClause}
 
 LOCATION RULES:
 - Use REAL, SPECIFIC, SEARCHABLE place names on OpenStreetMap.
 - Good: "Wat Suthat Thepwararam", "Bookmoby Ekkamai", "The Commons Thonglor", "Paper Butter & The Burger Ari"
 - Bad: "Pizza shop", "Nearby temple", "Local park", "Home Base"
-- For the user's zone (${savedZone}), pick places actually IN or near that area.
-- For home blocks: "Home, ${savedZone}, Bangkok"
+- Prioritise places near the user's starting location, keeping travel practical.
+- For home blocks: "Home, ${startLocName}, Bangkok"
 - "cat" = "work" or "leisure". "time" = 4-digit 24h string like "0900".
 
 User data: ${JSON.stringify(payload)}${notesClause}`;
@@ -1133,3 +1143,110 @@ function _requestGeolocation(onSuccess) {
         { timeout: 8000, maximumAge: 300000 }
     );
 }
+
+// ─── Step 4: Location Picker ─────────────────────
+let _locPickerMap = null;
+let _locPickerMarker = null;
+
+async function _reverseGeocode(lat, lon) {
+    try {
+        const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
+            { headers: { 'Accept-Language': 'en' } }
+        );
+        const data = await res.json();
+        const addr = data.address || {};
+        // Build a short, meaningful neighbourhood name
+        return addr.suburb || addr.neighbourhood || addr.quarter ||
+            addr.city_district || addr.city || addr.county || 'Bangkok';
+    } catch (_) { return 'Bangkok'; }
+}
+
+function _setLocResolved(name, lat, lon) {
+    $('#loc-hidden-name').value = name;
+    $('#loc-hidden-lat').value = lat;
+    $('#loc-hidden-lon').value = lon;
+
+    // Show the confirmed location panel
+    $('#loc-resolved-name').textContent = name;
+    $('#loc-resolved-coords').textContent = `${parseFloat(lat).toFixed(5)}, ${parseFloat(lon).toFixed(5)}`;
+    const resolvedEl = $('#loc-resolved');
+    resolvedEl.classList.remove('hide');
+    resolvedEl.style.display = 'flex';
+
+    // Also update the global geolocation cache so transport cards work
+    window.userGeoLocation = { lat: parseFloat(lat), lon: parseFloat(lon) };
+}
+
+function _initLocPicker() {
+    const gpsBtn = $('#loc-gps-btn');
+    const pinBtn = $('#loc-pin-btn');
+
+    if (!gpsBtn || !pinBtn) return;
+
+    // Option 1: GPS
+    gpsBtn.addEventListener('click', async () => {
+        gpsBtn.classList.add('selected');
+        pinBtn.classList.remove('selected');
+        gpsBtn.querySelector('.loc-option-sub').textContent = 'Detecting...';
+
+        // Hide map if open
+        $('#loc-map-container').classList.add('hide');
+
+        navigator.geolocation.getCurrentPosition(
+            async (pos) => {
+                const { latitude: lat, longitude: lon } = pos.coords;
+                const name = await _reverseGeocode(lat, lon);
+                _setLocResolved(name, lat, lon);
+                gpsBtn.querySelector('.loc-option-sub').textContent = name;
+            },
+            () => {
+                gpsBtn.querySelector('.loc-option-sub').textContent = 'Could not get location';
+                gpsBtn.classList.remove('selected');
+            },
+            { timeout: 8000 }
+        );
+    });
+
+    // Option 2: Pin on map
+    pinBtn.addEventListener('click', () => {
+        pinBtn.classList.add('selected');
+        gpsBtn.classList.remove('selected');
+
+        const mapContainer = $('#loc-map-container');
+        mapContainer.classList.remove('hide');
+
+        // Init Leaflet picker map (only once)
+        if (!_locPickerMap && window.L) {
+            const defaultLat = 13.7563, defaultLon = 100.5018;
+            _locPickerMap = window.L.map('loc-picker-map', { zoomControl: true }).setView([defaultLat, defaultLon], 13);
+            window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© <a href="https://osm.org/copyright">OSM</a>'
+            }).addTo(_locPickerMap);
+
+            // Draggable marker
+            _locPickerMarker = window.L.marker([defaultLat, defaultLon], { draggable: true }).addTo(_locPickerMap);
+            _locPickerMarker.bindPopup('Drag me to your location').openPopup();
+
+            const onMoved = async (e) => {
+                const { lat, lng } = e.latlng || _locPickerMarker.getLatLng();
+                const name = await _reverseGeocode(lat, lng);
+                _setLocResolved(name, lat, lng);
+                _locPickerMarker.bindPopup(`📍 ${name}`).openPopup();
+                pinBtn.querySelector('.loc-option-sub').textContent = name;
+            };
+
+            _locPickerMarker.on('dragend', onMoved);
+            _locPickerMap.on('click', (e) => {
+                _locPickerMarker.setLatLng(e.latlng);
+                onMoved(e);
+            });
+        }
+
+        // Invalidate size after container becomes visible
+        setTimeout(() => _locPickerMap && _locPickerMap.invalidateSize(), 100);
+    });
+}
+
+// Init once DOM is ready
+document.addEventListener('DOMContentLoaded', () => setTimeout(_initLocPicker, 200));

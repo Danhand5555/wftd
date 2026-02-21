@@ -162,24 +162,55 @@
                     </div>
                 </div>
 
-                <!-- Step 4: Location -->
+                <!-- Step 4: Location Picker -->
                 <div class="step-card hidden-right" data-step="4">
                     <div class="step-content">
                         <span class="step-counter">4 of 7</span>
-                        <label class="input-block majestic-block">
-                            <span class="label-txt majestic-label">Where do you prefer to work today?</span>
-                            <div class="input-majestic-wrapper">
-                                <input type="text" class="input-majestic" name="location"
-                                    placeholder="e.g., Home Base, Cafe...">
+                        <span class="label-txt majestic-label">Where are you based today?</span>
+                        <p style="font-size:var(--tx-sm);color:#666;margin-top:-8px;">This helps the AI suggest nearby
+                            places.</p>
+
+                        <!-- Hidden inputs to store resolved location -->
+                        <input type="hidden" name="location" id="loc-hidden-name" value="">
+                        <input type="hidden" name="location_lat" id="loc-hidden-lat" value="">
+                        <input type="hidden" name="location_lon" id="loc-hidden-lon" value="">
+
+                        <!-- Two option cards -->
+                        <div class="loc-option-grid">
+                            <button type="button" class="loc-option-card" id="loc-gps-btn">
+                                <span class="loc-option-icon">📍</span>
+                                <span class="loc-option-title">Current Location</span>
+                                <span class="loc-option-sub">Use my GPS now</span>
+                            </button>
+                            <button type="button" class="loc-option-card" id="loc-pin-btn">
+                                <span class="loc-option-icon">🗺️</span>
+                                <span class="loc-option-title">Pin on Map</span>
+                                <span class="loc-option-sub">I'll be somewhere else</span>
+                            </button>
+                        </div>
+
+                        <!-- Map picker (hidden until "Pin on Map" is selected) -->
+                        <div id="loc-map-container" class="hide">
+                            <p style="font-size:var(--tx-sm);color:#555;margin-bottom:6px;">Drag the pin or tap to place
+                                it.</p>
+                            <div id="loc-picker-map"
+                                style="height:240px;border:2px solid var(--clr-ink);border-radius:var(--radii-hard);">
                             </div>
-                            <div class="suggestion-chips">
-                                <button type="button" class="chip" data-value="Home Base">Home Base</button>
-                                <button type="button" class="chip" data-value="Cafe">Cafe</button>
-                                <button type="button" class="chip" data-value="Co-working Space">Co-working
-                                    Space</button>
+                        </div>
+
+                        <!-- Resolved location display -->
+                        <div id="loc-resolved" class="hide"
+                            style="display:flex;align-items:center;gap:8px;padding:12px;background:var(--clr-paper);border:2px solid var(--clr-ink);">
+                            <span style="font-size:18px;">✅</span>
+                            <div>
+                                <div style="font-size:var(--tx-sm);font-weight:var(--wght-bold);"
+                                    id="loc-resolved-name">—</div>
+                                <div style="font-size:11px;color:#888;" id="loc-resolved-coords">—</div>
                             </div>
-                            <span class="feedback-txt" id="fb-location"></span>
-                        </label>
+                        </div>
+
+                        <span class="feedback-txt" id="fb-location"></span>
+
                         <menu class="action-dock immersive-dock">
                             <button type="button" class="btn-ghost back-btn">Back</button>
                             <button type="button" class="btn-solid next-btn">
@@ -192,6 +223,7 @@
                         </menu>
                     </div>
                 </div>
+
 
                 <!-- Step 5: Budget -->
                 <div class="step-card hidden-right" data-step="5">
