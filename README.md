@@ -18,18 +18,6 @@ You answer 7 quick questions. The AI builds a full, rich day for you.
 
 ---
 
-## ✦ Screenshots
-
-| Auth | Onboarding | Dashboard |
-|------|-----------|-----------|
-| PIN-protected workspace | 7-step immersive form | Live schedule with status tracking |
-
-| Task Detail | Transport | Chat |
-|------------|-----------|------|
-| Real Leaflet map | Walk · BTS · Grab · Motorbike | SCHED AI chat panel |
-
----
-
 ## ✦ Tech Stack
 
 | Layer | Technology |
