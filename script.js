@@ -62,15 +62,6 @@ function _initEngine() {
 
                 _handleEntitiesFeedback({ target: input });
 
-                // Only advance if "skip" (empty) was clicked
-                if (val === "") {
-                    setTimeout(_nextStep, 150);
-                }
-            } else if (stepNum === "4") {
-                const input = $('input[name="location"]');
-                input.value = val;
-                _handleLocationFeedback({ target: input });
-                setTimeout(_nextStep, 150);
             }
         });
     });
@@ -98,7 +89,6 @@ function _initEngine() {
     $('input[name="entities"]').addEventListener('input', _handleEntitiesFeedback);
     const agendaContainer = $('#agenda-container');
     if (agendaContainer) agendaContainer.addEventListener('input', _handleAgendaFeedback);
-    $('input[name="location"]').addEventListener('input', _handleLocationFeedback);
     $('input[name="capital"]').addEventListener('input', _handleBudgetFeedback);
     $('input[name="eod"]').addEventListener('input', _handleEodFeedback);
 
@@ -227,10 +217,20 @@ function _nextStep() {
     const input = currentCard.querySelector('input, textarea');
 
     // Basic validation
-    if (input && input.required && !input.value.trim()) {
+    let isValid = true;
+    if (currentStep === 4) {
+        // Special validation for Step 4 location picker
+        const locVal = $('#loc-hidden-name').value;
+        if (!locVal) {
+            _showFeedback('fb-location', 'Please pick a starting location first.');
+            isValid = false;
+        }
+    } else if (input && input.required && !input.value.trim()) {
         input.focus();
-        return;
+        isValid = false;
     }
+
+    if (!isValid) return;
 
     if (currentStep < 7) {
         currentCard.classList.remove('active');
@@ -325,15 +325,6 @@ function _handleAgendaFeedback(e) {
     _showFeedback('fb-agenda', msg);
 }
 
-function _handleLocationFeedback(e) {
-    const val = e.target.value.trim().toLowerCase();
-    let msg = '';
-    if (val.includes('home')) msg = 'Zero commute. Maximum focus.';
-    else if (val.includes('cafe')) msg = 'Bustling energy. Grab a brew.';
-    else if (val.includes('work')) msg = 'Professional vibe. Let\'s build.';
-    else if (val.length > 3) msg = 'Solid HQ for the day.';
-    _showFeedback('fb-location', msg);
-}
 
 function _handleBudgetFeedback(e) {
     const val = parseInt(e.target.value, 10);
