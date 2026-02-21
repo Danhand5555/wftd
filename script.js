@@ -121,6 +121,7 @@ function _initAuth() {
         localStorage.removeItem('wftd_alias');
         localStorage.removeItem('wftd_pin');
         localStorage.removeItem('wftd_food');
+        localStorage.removeItem('wftd_job');
         localStorage.removeItem('wftd_today_schedule');
         localStorage.removeItem('wftd_today_date');
         location.reload();
@@ -142,10 +143,12 @@ function _handleSignup() {
     }
 
     const food = $('#auth-food-input').value.trim();
+    const job = $('#auth-job-input').value.trim();
 
     localStorage.setItem('wftd_alias', alias);
     localStorage.setItem('wftd_pin', pin);
     if (food) localStorage.setItem('wftd_food', food);
+    if (job) localStorage.setItem('wftd_job', job);
 
     _unlockWorkspace(alias);
 }
@@ -379,6 +382,7 @@ async function _handleCompile(e) {
         } else {
             const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
             const foodPref = localStorage.getItem('wftd_food') || 'No specific dietary restrictions';
+            const userJob = localStorage.getItem('wftd_job') || 'Professional';
 
             // Pick up the chosen starting location from Step 4
             const startLocName = $('#loc-hidden-name')?.value || 'Bangkok';
@@ -391,8 +395,10 @@ async function _handleCompile(e) {
             const notesClause = payload.notes ? `\n\nExtra user instructions: ${payload.notes}` : '';
             const prompt = `You are a creative, insightful personal scheduler for a user in Bangkok, Thailand. Return ONLY a raw JSON array of schedule objects — no markdown, no extra text.
             
-DIETARY PREFERENCE: ${foodPref} (Crucial: all food/restaurant suggestions MUST prioritize and strictly follow this preference).
-CURRENCY: Always calculate in THB (Thai Baht).
+USER PROFILE:
+- Job/Role: ${userJob} (Crucial: suggest work activities and tasks that are SPECIFIC to this role, not generic).
+- Dietary Preference: ${foodPref} (Crucial: all food/restaurant suggestions MUST prioritize and strictly follow this preference).
+- Currency: Always calculate in THB (Thai Baht).
 
 Format: [{"time":"0900","t":"Task Name","d":"Vivid one-sentence description.","cat":"work","dr":"2h","loc":"Real Place Name"}]
 
@@ -945,9 +951,11 @@ async function _sendChatMessage() {
     chatHistory.push({ role: 'user', text: userText });
 
     const foodPref = localStorage.getItem('wftd_food') || 'No restrictions';
+    const userJob = localStorage.getItem('wftd_job') || 'Professional';
     const systemPrompt = `You are SCHED AI, a sharp schedule assistant embedded in a productivity app called WFTD. The user's full schedule for today is: ${scheduleContext}. 
 
 USER CONTEXT:
+- Job/Role: ${userJob} (For any new work tasks, suggest things specific to this professional background).
 - Dietary Preference: ${foodPref} (Strictly follow this for any new food/cafe suggestions).
 - Currency: Always use THB (Thai Baht).
 - Location Proximity: If the user mentions a landmark/mall (e.g., "Siam Paragon", "EmQuartier"), you MUST find specific REAL restaurants or activities located INSIDE or immediately next to that specific place that match their ${foodPref} preference.
