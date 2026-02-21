@@ -1190,6 +1190,9 @@ function _initLocPicker() {
                 const name = await _reverseGeocode(lat, lon);
                 _setLocResolved(name, lat, lon);
                 gpsBtn.querySelector('.loc-option-sub').textContent = name;
+
+                // Scroll to resolved view
+                setTimeout(() => $('#loc-resolved').scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
             },
             () => {
                 gpsBtn.querySelector('.loc-option-sub').textContent = 'Could not get location';
@@ -1206,6 +1209,9 @@ function _initLocPicker() {
 
         const mapContainer = $('#loc-map-container');
         mapContainer.classList.remove('hide');
+
+        // Scroll to map
+        setTimeout(() => mapContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 150);
 
         // Init Leaflet picker map (only once)
         if (!_locPickerMap && window.L) {
@@ -1225,6 +1231,9 @@ function _initLocPicker() {
                 _setLocResolved(name, lat, lng);
                 _locPickerMarker.bindPopup(`📍 ${name}`).openPopup();
                 pinBtn.querySelector('.loc-option-sub').textContent = name;
+
+                // Scroll to resolved view
+                setTimeout(() => $('#loc-resolved').scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
             };
 
             _locPickerMarker.on('dragend', onMoved);
@@ -1235,7 +1244,7 @@ function _initLocPicker() {
         }
 
         // Invalidate size after container becomes visible
-        setTimeout(() => _locPickerMap && _locPickerMap.invalidateSize(), 100);
+        setTimeout(() => _locPickerMap && _locPickerMap.invalidateSize(), 200);
     });
 }
 
