@@ -209,57 +209,54 @@ function _unlockWorkspace(alias) {
 }
 
 // Helper to suggest appropriate chips based on job
-function _renderGoalChips() {
-    const job = (localStorage.getItem('wftd_job') || '').toLowerCase();
+async function _renderGoalChips() {
+    const job = localStorage.getItem('wftd_job') || 'Professional';
     const container = $('#goal-chips-container');
     if (!container) return;
 
-    let chips = [];
+    // 1. Set fast fallbacks while AI thinks
+    const fallbacks = {
+        'finance': [{ label: 'Market Analysis', val: 'Execute full market analysis and risk report' }, { label: 'Risk Review', val: 'Reviewing portfolio risk and exposure' }],
+        'design': [{ label: 'Moodboard', val: 'Curation and visual research' }, { label: 'UI Prep', val: 'High-fidelity wireframing' }],
+        'engineer': [{ label: 'Deep Code', val: 'Focused architecture and coding' }, { label: 'Bug Hunt', val: 'Fixing critical technical debt' }],
+        'default': [{ label: 'Deep Work', val: 'Focus on highest priority outcome' }, { label: 'Planning', val: 'Strategic planning for the week' }]
+    };
 
-    if (job.includes('hedge') || job.includes('fund') || job.includes('trader') || job.includes('finance')) {
-        chips = [
-            { label: 'Market Analysis', val: 'Execute full market analysis and risk report' },
-            { label: 'Strategy Sync', val: 'Hedge strategy alignment and rebalancing' },
-            { label: 'Alpha Search', val: 'Researching new alpha opportunities and signals' },
-            { label: 'Portfolio Review', val: 'Detailed portfolio and drawdown review' }
-        ];
-    } else if (job.includes('design') || job.includes('creative') || job.includes('artist')) {
-        chips = [
-            { label: 'Moodboard', val: 'Curation and visual research for new concept' },
-            { label: 'UI Prototyping', val: 'High-fidelity wireframing and prototyping' },
-            { label: 'Client Review', val: 'Prepare presentation for design review' },
-            { label: 'Visual Audit', val: 'Reviewing brand design system consistency' }
-        ];
-    } else if (job.includes('engineer') || job.includes('developer') || job.includes('coder') || job.includes('dev')) {
-        chips = [
-            { label: 'Deep Code', val: 'Focused architecture and coding session' },
-            { label: 'Bug Squashing', val: 'Fixing critical bugs and technical debt' },
-            { label: 'PR Review', val: 'Reviewing pull requests and code quality' },
-            { label: 'Deployment', val: 'Managing production deployments and CI/CD' }
-        ];
-    } else if (job.includes('lawyer') || job.includes('legal')) {
-        chips = [
-            { label: 'Contract Review', val: 'Detailed review and markup of legal contracts' },
-            { label: 'Case Research', val: 'Researching precedents and legal arguments' },
-            { label: 'Drafting', val: 'Drafting legal notices or agreements' },
-            { label: 'Client Sync', val: 'Preparation for upcoming litigation or sync' }
-        ];
-    } else {
-        // General / Default
-        chips = [
-            { label: 'Deep Work', val: 'Intense focus on highest priority outcome' },
-            { label: 'Strategic Plan', val: 'Mapping out quarterly goals and growth' },
-            { label: 'Admin Clear', val: 'Zeroing my inbox and processing tasks' },
-            { label: 'Team Alignment', val: 'Aligning with the team on core metrics' }
-        ];
+    const category = Object.keys(fallbacks).find(k => job.toLowerCase().includes(k)) || 'default';
+    let currentChips = [...fallbacks[category], { label: 'Rest Day', val: 'Rest and mental recovery' }];
+
+    const render = (list) => {
+        container.innerHTML = list.map(c => `<button type="button" class="chip" data-value="${c.val}">${c.label}</button>`).join('');
+    };
+
+    render(currentChips);
+
+    // 2. Fetch AI-powered hyper-specific chips
+    try {
+        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+        if (!apiKey || apiKey.includes('YOUR_')) return;
+
+        const prompt = `Generate 4 short, punchy "goal" suggestion chips for a ${job}. 
+        Return ONLY a JSON array of 4 objects: [{"label": "Short Action", "val": "Full descriptive task for AI"}].
+        Example for Lawyer: [{"label":"Drafting","val":"Drafting legal notices and contracts"}]
+        Maximum 2 words for labels.`;
+
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            const text = data.candidates[0].content.parts[0].text.trim().replace(/```json/g, '').replace(/```/g, '');
+            const aiChips = JSON.parse(text);
+            aiChips.push({ label: 'Rest Day', val: 'Rest and mental recovery' });
+            render(aiChips);
+        }
+    } catch (e) {
+        console.warn('AI Chips failed, sticking with fallbacks', e);
     }
-
-    // Always add Rest Day
-    chips.push({ label: 'Rest Day', val: 'Rest and mental recovery' });
-
-    container.innerHTML = chips.map(c => `
-        <button type="button" class="chip" data-value="${c.val}">${c.label}</button>
-    `).join('');
 }
 
 // State
