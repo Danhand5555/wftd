@@ -2,6 +2,8 @@
 
 > **An AI-powered daily schedule generator for Bangkok.** Tell it your goal and your professional role, and it builds your entire day — real places, live map, strategic insights, and an AI chat assistant.
 
+**Live Demo: [https://wftd.vercel.app](https://wftd.vercel.app)**
+
 ---
 
 ## ✦ What It Does
