@@ -493,22 +493,34 @@ input {
 .log-list {
     list-style: none;
     display: grid;
-    gap: var(--space-8);
+    gap: var(--space-12);
 }
 
-.log-list li {
+.insight-item {
     font-size: var(--tx-sm);
-    color: #444;
-    position: relative;
-    padding-left: 12px;
+    color: var(--clr-ink);
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid var(--clr-chrome);
+    padding: var(--space-12);
+    border-radius: 4px;
+    display: flex;
+    gap: var(--space-8);
+    line-height: 1.4;
+    transition: transform 0.2s, background 0.2s;
 }
 
-.log-list li::before {
-    content: '›';
-    position: absolute;
-    left: 0;
-    color: var(--clr-brand-dim);
-    font-weight: bold;
+.insight-item:hover {
+    background: var(--clr-paper);
+    transform: translateX(4px);
+}
+
+.insight-icon {
+    flex-shrink: 0;
+    font-size: 16px;
+}
+
+.insight-text {
+    flex: 1;
 }
 
 /* Core Panel / Timeline Tree */

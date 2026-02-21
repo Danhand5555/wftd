@@ -423,11 +423,13 @@ async function _handleCompile(e) {
     }
 
     let itinerary = [];
+    let insights = [];
     try {
         const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
         if (!apiKey || apiKey === 'YOUR_GEMINI_API_KEY_HERE') {
             console.warn('Gemini API key missing. Falling back to local offline generation.');
             itinerary = _synthesizeItinerary(payload);
+            insights = _generateTelemetryLogs(payload);
         } else {
             const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
             const foodPref = localStorage.getItem('wftd_food') || 'No specific dietary restrictions';
@@ -442,14 +444,17 @@ async function _handleCompile(e) {
                 : `\nUser's location: ${startLocName}, Bangkok.`;
 
             const notesClause = payload.notes ? `\n\nExtra user instructions: ${payload.notes}` : '';
-            const prompt = `You are a creative, insightful personal scheduler for a user in Bangkok, Thailand. Return ONLY a raw JSON array of schedule objects — no markdown, no extra text.
+            const prompt = `You are a creative, insightful personal scheduler for a user in Bangkok, Thailand. Return ONLY a raw JSON object — no markdown, no extra text.
             
 USER PROFILE:
 - Job/Role: ${userJob} (Crucial: suggest work activities and tasks that are SPECIFIC to this role, not generic).
 - Dietary Preference: ${foodPref} (Crucial: all food/restaurant suggestions MUST prioritize and strictly follow this preference).
 - Currency: Always calculate in THB (Thai Baht).
 
-Format: [{"time":"0900","t":"Task Name","d":"Vivid one-sentence description.","cat":"work","dr":"2h","loc":"Real Place Name"}]
+Format: {
+  "itinerary": [{"time":"0900","t":"Task Name","d":"Vivid description.","cat":"work","dr":"2h","loc":"Place"}],
+  "insights": ["3-4 short high-level strategic tips about the day: e.g. travel warnings, productivity hacks for their job, or local Bangkok context"]
+}
 
 YOUR JOB — FILLING THE DAY:
 The user has a primary goal but a full day to fill from morning until their EOD time. Do NOT repeat the main goal for every block. Instead:
@@ -493,26 +498,38 @@ User data: ${JSON.stringify(payload)}${notesClause}`;
             // Strip markdown wrappers if model adds them
             let cleanJson = content.replace(/```json/g, '').replace(/```/g, '').trim();
 
-            // If JSON is truncated, try to recover by closing the array at the last complete object
+            // If JSON is truncated, try to recover by closing it correctly
+            let parsedData;
             try {
-                itinerary = JSON.parse(cleanJson);
+                parsedData = JSON.parse(cleanJson);
             } catch {
-                const lastBrace = cleanJson.lastIndexOf('},');
+                const lastBrace = cleanJson.lastIndexOf('}');
                 if (lastBrace !== -1) {
-                    cleanJson = cleanJson.substring(0, lastBrace + 1) + ']';
-                    itinerary = JSON.parse(cleanJson);
+                    cleanJson = cleanJson.substring(0, lastBrace + 1) + (cleanJson.startsWith('[') ? ']' : '}');
+                    parsedData = JSON.parse(cleanJson);
                 } else {
                     throw new Error('Could not recover truncated JSON from Gemini response');
                 }
+            }
+
+            // Handle both legacy array and new object format
+            if (Array.isArray(parsedData)) {
+                itinerary = parsedData;
+            } else if (parsedData.itinerary) {
+                itinerary = parsedData.itinerary;
+                if (parsedData.insights) insights = parsedData.insights;
             }
         }
     } catch (err) {
         console.error('Gemini AI Error:', err);
         alert(`AI generation failed: ${err.message}\n\nFalling back to local generator.`);
         itinerary = _synthesizeItinerary(payload);
+        insights = _generateTelemetryLogs(payload);
     }
 
-    const insights = _generateTelemetryLogs(payload);
+    if (!insights || insights.length === 0) {
+        insights = _generateTelemetryLogs(payload);
+    }
 
     // Persist today's schedule
     const today = new Date().toDateString();
@@ -670,9 +687,14 @@ function _mountSurface(state, itinerary, insights) {
 
     $('#stat-entities').textContent = state.entities || 'Null';
 
-    // 3. Hydrate Logs
+    // 3. Hydrate Logs (Insights)
     const logContainer = $('#system-logs');
-    logContainer.innerHTML = insights.map(i => `<li>${i}</li>`).join('');
+    logContainer.innerHTML = insights.map(i => `
+        <li class="insight-item">
+            <span class="insight-icon">💡</span>
+            <span class="insight-text">${i}</span>
+        </li>
+    `).join('');
 
     // 4. Render Timeline with Staggered Nodes
     const track = $('#timeline-root');
