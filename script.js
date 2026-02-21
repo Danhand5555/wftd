@@ -1080,12 +1080,12 @@ USER CONTEXT:
 - Location Proximity: If the user mentions a landmark/mall (e.g., "Siam Paragon", "EmQuartier"), you MUST find specific REAL restaurants or activities located INSIDE or immediately next to that specific place that match their ${foodPref} preference.
 
 You can either:
-1. Answer questions about the schedule in plain text (e.g. "What time is lunch?").
+1. Answer questions about the schedule in plain text (e.g. "What time is my meeting?").
 2. If the user asks to CHANGE, ADD, REMOVE, or MOVE anything, you MUST return a valid JSON object ONLY. 
    CRITICAL: Do NOT include any intro text, conversational filler, or markdown outside the JSON.
-   Format: {"type":"schedule_update","message":"Brief status message.","schedule":[...the full updated itinerary array...]}
+   Expected JSON Format: {"type":"schedule_update","message":"Status message.","schedule":[...updated itinerary array...]}
    - Use the full array of tasks.
-   - Example format for items: {"time":"2:00 PM","t":"Task Name","d":"Description.","cat":"work","dr":"2h","loc":"Place Name", "cost": 500, "cost_range": "400-800 THB"}
+   - Maintain the professional context: ${userJob} tasks and ${foodPref} dietary respect.
 3. For all other replies, just reply in plain text.
 `;
 
@@ -1119,22 +1119,38 @@ You can either:
 
         // Try to detect schedule update JSON (robust extraction)
         try {
-            const jsonMatch = replyText.match(/\{[\s\S]*\}/);
-            const jsonStr = jsonMatch ? jsonMatch[0] : replyText;
+            // Remove markdown codes and find the main JSON object
+            const cleanedReply = replyText.replace(/```json/g, '').replace(/```/g, '').trim();
+            const jsonMatch = cleanedReply.match(/\{[\s\S]*\}/);
+            const jsonStr = jsonMatch ? jsonMatch[0] : cleanedReply;
             const parsed = JSON.parse(jsonStr);
 
             if (parsed.type === 'schedule_update' && parsed.schedule) {
+                // Success!
                 _appendChatMsg(parsed.message || 'Schedule updated!', 'ai');
-                // Update localStorage and re-render
+
+                // Update workspace
                 const saved = JSON.parse(localStorage.getItem('wftd_today_schedule') || '{}');
                 saved.itinerary = parsed.schedule;
                 localStorage.setItem('wftd_today_schedule', JSON.stringify(saved));
 
-                // Re-mount the surface to show changes
-                _mountSurface(saved.state || {}, parsed.schedule, saved.insights || []);
+                // Visual feedback: Pulse the timeline
+                const track = $('#timeline-root');
+                track.style.transition = 'opacity 0.3s ease';
+                track.style.opacity = '0.3';
+
+                setTimeout(() => {
+                    _mountSurface(saved.state || {}, parsed.schedule, saved.insights || []);
+                    track.style.opacity = '1';
+                    track.classList.add('pulse-update');
+                    setTimeout(() => track.classList.remove('pulse-update'), 1500);
+                }, 300);
+
                 return;
             }
-        } catch (_) { /* Not JSON or invalid format — fall through to plain text */ }
+        } catch (e) {
+            console.warn('Reply was not a valid schedule update JSON, showing as text.', e);
+        }
 
         _appendChatMsg(replyText, 'ai');
     } catch (err) {

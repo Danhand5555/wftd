@@ -542,6 +542,27 @@ input {
     }
 }
 
+@keyframes updatePulse {
+    0% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+
+    50% {
+        transform: scale(1.01);
+        filter: brightness(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+}
+
+.pulse-update {
+    animation: updatePulse 1s var(--ease-snappy);
+}
+
 .insight-text {
     flex: 1;
     font-weight: 500;
