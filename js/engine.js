@@ -1,4 +1,4 @@
-import { $, _haversineKm, _formatMinutes } from './utils.js';
+import { $, _haversineKm, _formatMinutes, _parseTimeParts, _formatTo12h } from './utils.js';
 import { CORE_REGIMEN, WEATHER_CODES } from './config.js';
 import { _mountSurface, _updateWeatherUI } from './ui.js';
 
@@ -134,7 +134,8 @@ export function _synthesizeItinerary(payload) {
     const lunchRange = lunchCost > 0 ? `${Math.floor(lunchCost * 0.8)}-${Math.ceil(lunchCost * 1.5)} THB` : null;
     raw.push({ time: '1:00 PM', t: 'Lunch Break', d: lunchData, cat: 'leisure', dr: '1h', loc: `Local Bangkok Eatery`, cost: lunchCost, cost_range: lunchRange });
     raw.push({ time: '2:00 PM', t: 'Secondary Tasks', d: 'Clearing intermediate tasks.', cat: 'work', dr: '2.5h', loc: baseLoc, tips: locTips });
-    raw.push({ time: eod || '5:00 PM', t: 'Wind Down', d: 'End of work day. Hard stop.', cat: 'leisure', dr: 'EOD' });
+    const standardizedEod = _formatTo12h(eod) || '5:00 PM';
+    raw.push({ time: standardizedEod, t: 'Wind Down', d: 'End of work day. Hard stop.', cat: 'leisure', dr: 'EOD' });
     return raw;
 }
 
@@ -180,19 +181,15 @@ export function _startLiveTracking() {
         nodes.forEach((node, idx) => {
             const data = JSON.parse(node.dataset.info || '{}');
             if (!data.time) return;
-            const parts = data.time.match(/(\d+):(\d+)\s*(AM|PM)/i);
+            const parts = _parseTimeParts(data.time);
             if (!parts) return;
-            let h = parseInt(parts[1], 10), m = parseInt(parts[2], 10), ampm = parts[3].toUpperCase();
-            if (ampm === 'PM' && h < 12) h += 12; if (ampm === 'AM' && h === 12) h = 0;
-            const nodeTotalMinutes = (h * 60) + m;
+            const nodeTotalMinutes = (parts.hours * 60) + parts.minutes;
             let nextNodeMinutes = 24 * 60;
             if (idx + 1 < nodes.length) {
                 const nextData = JSON.parse(nodes[idx + 1].dataset.info || '{}');
-                const nextParts = nextData.time?.match(/(\d+):(\d+)\s*(AM|PM)/i);
+                const nextParts = _parseTimeParts(nextData.time);
                 if (nextParts) {
-                    let nh = parseInt(nextParts[1], 10), nm = parseInt(nextParts[2], 10), nampm = nextParts[3].toUpperCase();
-                    if (nampm === 'PM' && nh < 12) nh += 12; if (nampm === 'AM' && nh === 12) nh = 0;
-                    nextNodeMinutes = (nh * 60) + nm;
+                    nextNodeMinutes = (nextParts.hours * 60) + nextParts.minutes;
                 }
             }
             node.classList.remove('status-past', 'status-active');

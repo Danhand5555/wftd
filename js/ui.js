@@ -235,9 +235,11 @@ export function _handleBudgetFeedback(e) {
 }
 
 export function _handleEodFeedback(e) {
-    const val = e.target.value;
+    const val = e.target.value.trim();
     let msg = '';
-    if (val) msg = `Quitting at ${val}. Locked in till then.`;
+    const stdTime = _formatTo12h(val);
+    if (stdTime) msg = `Quitting at ${stdTime}. Locked in till then.`;
+    else if (val) msg = `Format time (e.g., 9:00 PM, 21:00, 2100)`;
     _showFeedback('fb-eod', msg);
 }
 
