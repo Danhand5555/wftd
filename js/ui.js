@@ -5,6 +5,70 @@ import { _showChat } from './chat.js';
 
 // State
 let currentStep = 1;
+let activeFlow = [1, 2, 3, 4, 5, 6, 7]; // Default full flow
+
+/**
+ * Determines the adaptive workflow based on the user's initial goal.
+ * This keeps the experience tailored and prevents "form fatigue".
+ */
+export function _determineFlow(goalText) {
+    const text = goalText.toLowerCase();
+
+    const keywords = {
+        social: ['meet', 'chat', 'talk', 'sync', 'call', 'pitch', 'client', 'interview', 'team', 'collaboration'],
+        work: ['focus', 'code', 'write', 'build', 'study', 'deep', 'work', 'project', 'report', 'analysis'],
+        leisure: ['eat', 'travel', 'explore', 'visit', 'shop', 'relax', 'holiday', 'trip', 'temple', 'museum']
+    };
+
+    let flow = [1]; // Always start with Goal
+
+    const isSocial = keywords.social.some(k => text.includes(k));
+    const isWork = keywords.work.some(k => text.includes(k));
+    const isLeisure = keywords.leisure.some(k => text.includes(k));
+
+    if (isSocial) {
+        flow = [1, 2, 3, 4, 6, 7]; // Focus on people/agenda
+    } else if (isWork) {
+        flow = [1, 4, 6, 7]; // Straight to work environment
+    } else if (isLeisure) {
+        flow = [1, 4, 5, 6, 7]; // Focus on location and budget
+    } else {
+        flow = [1, 2, 4, 5, 6, 7]; // Standard balanced flow
+    }
+
+    activeFlow = flow;
+    _updateStepCounters();
+    _tailorLabels(isWork, isLeisure, isSocial);
+    return activeFlow;
+}
+
+function _tailorLabels(isWork, isLeisure, isSocial) {
+    const locLabel = $('.step-card[data-step="4"] .majestic-label');
+    const eodLabel = $('.step-card[data-step="6"] .majestic-label');
+    const notesLabel = $('#step-7-label') || $('.step-card[data-step="7"] .majestic-label');
+
+    if (isWork) {
+        if (locLabel) locLabel.textContent = "Where's your deep work station today?";
+        if (eodLabel) eodLabel.textContent = "When are you wrapping up tonight?";
+        if (notesLabel) notesLabel.textContent = "Any deep work focus details?";
+    } else if (isLeisure) {
+        if (locLabel) locLabel.textContent = "Where's your base for exploration?";
+        if (eodLabel) eodLabel.textContent = "When do you want to head back?";
+        if (notesLabel) notesLabel.textContent = "Any specific places you must see?";
+    } else if (isSocial) {
+        if (locLabel) locLabel.textContent = "Where are you starting your day?";
+        if (eodLabel) eodLabel.textContent = "When is your last networking event?";
+    }
+}
+
+function _updateStepCounters() {
+    activeFlow.forEach((stepNum, index) => {
+        const counter = $(`.step-card[data-step="${stepNum}"] .step-counter`);
+        if (counter) {
+            counter.textContent = `${index + 1} of ${activeFlow.length}`;
+        }
+    });
+}
 
 // Step Navigation
 export function _nextStep() {
@@ -14,7 +78,6 @@ export function _nextStep() {
     // Basic validation
     let isValid = true;
     if (currentStep === 4) {
-        // Special validation for Step 4 location picker
         const locVal = $('#loc-hidden-name').value;
         if (!locVal) {
             _showFeedback('fb-location', 'Please pick a starting location first.');
@@ -27,17 +90,27 @@ export function _nextStep() {
 
     if (!isValid) return;
 
-    if (currentStep < 7) {
+    // Special Case: Determine flow after Step 1
+    if (currentStep === 1) {
+        _determineFlow($('textarea[name="directive"]').value);
+    }
+
+    const currentIndex = activeFlow.indexOf(currentStep);
+    if (currentIndex !== -1 && currentIndex < activeFlow.length - 1) {
         currentCard.classList.remove('active');
         currentCard.classList.add('hidden-left');
 
-        let nextStepNum = currentStep + 1;
+        let nextStepNum = activeFlow[currentIndex + 1];
 
-        // Conditional Step 3 (Agenda)
-        if (currentStep === 2) {
+        // Dynamic Agenda Check (if Step 3 is in flow, but no people were added in Step 2)
+        if (nextStepNum === 3) {
             const entitiesVal = $('input[name="entities"]').value.trim();
             if (!entitiesVal) {
-                nextStepNum = 4; // Skip Agenda if no people
+                // Skip Agenda if no people were actually typed
+                const nextNextIndex = currentIndex + 2;
+                if (nextNextIndex < activeFlow.length) {
+                    nextStepNum = activeFlow[nextNextIndex];
+                }
             } else {
                 _buildAgendaInputs(entitiesVal);
             }
@@ -47,6 +120,7 @@ export function _nextStep() {
         const nextCard = $(`.step-card[data-step="${currentStep}"]`);
         nextCard.classList.remove('hidden-right');
         nextCard.classList.add('active');
+
         setTimeout(() => {
             const nextInput = nextCard.querySelector('input, textarea');
             if (nextInput) nextInput.focus();
@@ -55,18 +129,19 @@ export function _nextStep() {
 }
 
 export function _prevStep() {
-    if (currentStep > 1) {
+    const currentIndex = activeFlow.indexOf(currentStep);
+    if (currentIndex > 0) {
         const currentCard = $(`.step-card[data-step="${currentStep}"]`);
         currentCard.classList.remove('active');
         currentCard.classList.add('hidden-right');
 
-        let prevStepNum = currentStep - 1;
+        let prevStepNum = activeFlow[currentIndex - 1];
 
-        // Conditional Step 3 Backwards
-        if (currentStep === 4) {
+        // Dynamic Agenda Check Backward
+        if (prevStepNum === 3) {
             const entitiesVal = $('input[name="entities"]').value.trim();
             if (!entitiesVal) {
-                prevStepNum = 2; // Skip Agenda backward if no people
+                prevStepNum = activeFlow[currentIndex - 2];
             }
         }
 
@@ -79,6 +154,10 @@ export function _prevStep() {
 
 export function getCurrentStep() { return currentStep; }
 export function setCurrentStep(val) { currentStep = val; }
+export function isLastStep() {
+    const currentIndex = activeFlow.indexOf(currentStep);
+    return currentIndex === activeFlow.length - 1;
+}
 
 // Dynamic Feedback Handlers
 export function _showFeedback(nodeId, text) {

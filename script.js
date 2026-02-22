@@ -79,7 +79,7 @@ function _initEngine() {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             import('./js/ui.js').then(m => {
-                if (m.getCurrentStep() < 7) m._nextStep();
+                if (!m.isLastStep()) m._nextStep();
                 else _handleCompile(e);
             });
         }
