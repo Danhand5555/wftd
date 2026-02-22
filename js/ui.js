@@ -8,32 +8,50 @@ let currentStep = 1;
 let activeFlow = [1, 2, 3, 4, 5, 6, 7]; // Default full flow
 
 /**
- * Determines the adaptive workflow based on the user's initial goal.
- * This keeps the experience tailored and prevents "form fatigue".
+ * Determines the adaptive workflow based on the user's initial goal using AI.
  */
-export function _determineFlow(goalText) {
-    const text = goalText.toLowerCase();
+export async function _determineFlow(goalText) {
+    let flow = [1, 2, 4, 5, 6, 7]; // Default
+    let isSocial = false, isWork = false, isLeisure = false;
 
-    const keywords = {
-        social: ['meet', 'chat', 'talk', 'sync', 'call', 'pitch', 'client', 'interview', 'team', 'collaboration'],
-        work: ['focus', 'code', 'write', 'build', 'study', 'deep', 'work', 'project', 'report', 'analysis'],
-        leisure: ['eat', 'travel', 'explore', 'visit', 'shop', 'relax', 'holiday', 'trip', 'temple', 'museum']
-    };
+    try {
+        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+        if (!apiKey || apiKey.includes('YOUR_')) throw new Error('No API Key');
 
-    let flow = [1]; // Always start with Goal
+        const prompt = `Classify this goal for a scheduling app: "${goalText}"
+        Return ONLY a JSON object: {"category": "social" | "work" | "leisure" | "other"}
+        - "social": meeting people, events, calls, syncs.
+        - "work": focused individual tasks, coding, writing, projects.
+        - "leisure": travel, exploration, rest, relaxation, hobby.
+        - "other": anything else.`;
 
-    const isSocial = keywords.social.some(k => text.includes(k));
-    const isWork = keywords.work.some(k => text.includes(k));
-    const isLeisure = keywords.leisure.some(k => text.includes(k));
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        });
 
-    if (isSocial) {
-        flow = [1, 2, 3, 4, 6, 7]; // Focus on people/agenda
-    } else if (isWork) {
-        flow = [1, 4, 6, 7]; // Straight to work environment
-    } else if (isLeisure) {
-        flow = [1, 4, 5, 6, 7]; // Focus on location and budget
-    } else {
-        flow = [1, 2, 4, 5, 6, 7]; // Standard balanced flow
+        if (res.ok) {
+            const data = await res.json();
+            const text = data.candidates[0].content.parts[0].text.trim().replace(/```json/g, '').replace(/```/g, '');
+            const aiResult = JSON.parse(text);
+
+            if (aiResult.category === 'social') {
+                flow = [1, 2, 3, 4, 6, 7];
+                isSocial = true;
+            } else if (aiResult.category === 'work') {
+                flow = [1, 4, 6, 7];
+                isWork = true;
+            } else if (aiResult.category === 'leisure') {
+                flow = [1, 4, 5, 6, 7];
+                isLeisure = true;
+            } else {
+                flow = [1, 4, 6, 7]; // Default to lean flow for "other" like sleep/rest
+            }
+        }
+    } catch (e) {
+        console.warn('AI Flow determination failed, using standard.', e);
+        flow = [1, 2, 4, 5, 6, 7];
     }
 
     activeFlow = flow;
@@ -71,7 +89,7 @@ function _updateStepCounters() {
 }
 
 // Step Navigation
-export function _nextStep() {
+export async function _nextStep() {
     const currentCard = $(`.step-card[data-step="${currentStep}"]`);
     const input = currentCard.querySelector('input, textarea');
 
@@ -90,9 +108,17 @@ export function _nextStep() {
 
     if (!isValid) return;
 
-    // Special Case: Determine flow after Step 1
+    // Special Case: Determine flow after Step 1 using AI
     if (currentStep === 1) {
-        _determineFlow($('textarea[name="directive"]').value);
+        const btn = currentCard.querySelector('.next-btn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = 'Thinking...';
+        btn.disabled = true;
+
+        await _determineFlow($('textarea[name="directive"]').value);
+
+        btn.innerHTML = originalText;
+        btn.disabled = false;
     }
 
     const currentIndex = activeFlow.indexOf(currentStep);
