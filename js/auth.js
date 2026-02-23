@@ -82,6 +82,9 @@ export async function _initAuth() {
         $('#auth-choice-layer').classList.remove('hide');
         $('#auth-signup-layer').classList.add('hide');
         $('#auth-login-layer').classList.add('hide');
+        // Reset signup sub-steps
+        $('#signup-view-identity')?.classList.remove('hide');
+        $('#signup-view-setup')?.classList.add('hide');
         if (window.lucide) window.lucide.createIcons();
     };
 
@@ -110,6 +113,23 @@ export async function _initAuth() {
 
     $('#btn-choice-guest')?.addEventListener('click', () => {
         _unlockWorkspace('Guest');
+    });
+
+    // Signup Wizard Navigation
+    $('#btn-signup-to-setup')?.addEventListener('click', () => {
+        const alias = $('#auth-alias-input').value.trim();
+        if (!alias) {
+            alert("Please enter your name to continue.");
+            return;
+        }
+        $('#signup-view-identity').classList.add('hide');
+        $('#signup-view-setup').classList.remove('hide');
+        if (window.lucide) window.lucide.createIcons();
+    });
+
+    $('#btn-signup-to-identity')?.addEventListener('click', () => {
+        $('#signup-view-setup').classList.add('hide');
+        $('#signup-view-identity').classList.remove('hide');
     });
 
 
@@ -169,8 +189,7 @@ export async function _initAuth() {
     });
 
     // Back to Gate Listeners (Add IDs to HTML or use existing structure)
-    $$('.auth-brand').forEach(brand => {
-        brand.style.cursor = 'pointer';
+    $$('.engine-brand.clickable').forEach(brand => {
         brand.addEventListener('click', showChoice);
     });
 }

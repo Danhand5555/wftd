@@ -55,10 +55,22 @@
     inset: 0;
     background: var(--clr-paper);
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+    /* Start from top to allow scroll */
     z-index: 1000;
-    padding: var(--space-24);
+    padding: var(--space-32) var(--space-24);
+    overflow-y: auto;
+    /* Enable vertical scroll */
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 480px) {
+    .auth-overlay {
+        justify-content: center;
+        padding: var(--space-48) var(--space-24);
+    }
 }
 
 .auth-box {
@@ -71,7 +83,8 @@
 .auth-choice-grid {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
+    margin-top: 12px;
 }
 
 .choice-card {
@@ -100,13 +113,19 @@
 }
 
 .choice-card.variant-ghost {
-    background: rgba(255, 255, 255, 0.4);
-    border-style: dashed;
+    background: var(--clr-surface);
+    border: 2px solid var(--clr-ink);
+    box-shadow: 2px 2px 0 0 var(--clr-ink);
 }
 
 .choice-card.variant-ghost:hover {
-    border-style: solid;
-    background: white;
+    background: var(--clr-paper);
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 0 0 var(--clr-ink);
+}
+
+.choice-card.variant-ghost .choice-icon-svg {
+    opacity: 0.6;
 }
 
 .choice-icon-svg {
@@ -138,37 +157,51 @@
     color: #666;
 }
 
-/* Brand */
-.auth-brand {
-    font-size: 24px;
+/* Branding System */
+.engine-brand {
+    font-size: clamp(20px, 5vw, 24px);
     font-weight: 900;
     text-transform: uppercase;
     letter-spacing: -0.05em;
-    margin-bottom: 40px;
     color: var(--clr-ink);
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 8px;
-    transition: opacity 0.2s;
+    transition: all 0.2s var(--ease-snappy);
+    user-select: none;
+    line-height: 1;
 }
 
-.auth-brand:hover {
+.engine-brand.clickable {
+    cursor: pointer;
+}
+
+.engine-brand.clickable:hover {
     opacity: 0.7;
+    transform: translateX(2px);
 }
 
-.auth-brand span {
+.engine-brand span {
     font-size: 10px;
-    font-weight: var(--wght-bold);
+    font-weight: 900;
     background: var(--clr-ink);
     color: var(--clr-paper);
-    padding: 2px 6px;
+    padding: 3px 6px;
     border-radius: 4px;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.05em;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-header-brand {
+    margin-bottom: 32px;
 }
 
 /* Heading */
 .auth-heading {
-    font-size: 32px;
+    font-size: clamp(24px, 8vw, 32px);
     font-weight: 900;
     line-height: 1.1;
     margin-bottom: 12px;
@@ -176,9 +209,9 @@
 }
 
 .auth-desc {
-    font-size: 16px;
+    font-size: clamp(14px, 4vw, 16px);
     color: #555;
-    margin-bottom: 40px;
+    margin-bottom: 32px;
 }
 
 /* Form */
@@ -220,17 +253,25 @@
 
 .theme-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(3, 1fr);
+    /* 3 cols on mobile */
+    gap: 8px;
     margin-bottom: 24px;
+}
+
+@media (min-width: 480px) {
+    .theme-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+    }
 }
 
 .theme-chip {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
-    padding: 16px 12px;
+    gap: 8px;
+    padding: 12px 8px;
     border: 2px solid var(--clr-chrome);
     border-radius: var(--radii-soft);
     background: var(--clr-paper);
@@ -238,6 +279,13 @@
     cursor: pointer;
     position: relative;
     overflow: hidden;
+}
+
+@media (min-width: 480px) {
+    .theme-chip {
+        gap: 10px;
+        padding: 16px 12px;
+    }
 }
 
 .theme-chip:hover {
@@ -249,6 +297,7 @@
 .theme-chip.active {
     border-color: var(--clr-ink);
     background: var(--clr-surface);
+    box-shadow: 0 4px 0 0 var(--clr-ink);
 }
 
 .theme-chip.active::before {
@@ -774,29 +823,12 @@ input {
 .top-nav {
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
+    align-items: center;
     padding-bottom: var(--space-16);
-    border-bottom: 2px solid var(--clr-ink);
+    border-bottom: 3px solid var(--clr-ink);
+    /* Thicker line to match brand */
 }
 
-.brand-lockup {
-    display: flex;
-    align-items: baseline;
-    gap: 6px;
-}
-
-.brand-mark {
-    font-weight: 900;
-    font-size: var(--tx-lg);
-    letter-spacing: -0.05em;
-}
-
-.brand-sub {
-    font-size: var(--tx-tiny);
-    text-transform: uppercase;
-    font-weight: var(--wght-bold);
-    color: #888;
-}
 
 .nav-utils {
     display: flex;

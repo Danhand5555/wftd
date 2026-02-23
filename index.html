@@ -60,7 +60,7 @@
             <div class="auth-box">
                 <!-- Choice Layer (New Gate) -->
                 <div id="auth-choice-layer" class="">
-                    <div class="auth-brand">WFTD <span>Engine</span></div>
+                    <div class="engine-brand clickable auth-header-brand">WFTD <span>Engine</span></div>
                     <h1 class="auth-heading">Welcome to your daily engine</h1>
                     <p class="auth-desc">How would you like to access your workspace today?</p>
 
@@ -90,28 +90,40 @@
                 </div>
 
                 <div id="auth-signup-layer" class="hide">
-                    <div class="auth-brand">WFTD <span>Engine</span></div>
-                    <h1 class="auth-heading">Create your workspace</h1>
-                    <p class="auth-desc">Fill in your details to personalize your daily schedule.</p>
+                    <div class="engine-brand clickable auth-header-brand">WFTD <span>Engine</span></div>
 
-                    <div class="auth-form-stack">
-                        <div class="auth-field">
-                            <label for="auth-alias-input">Name</label>
-                            <input type="text" id="auth-alias-input" placeholder="What should we call you?"
-                                autocomplete="off">
-                        </div>
-                        <div class="auth-row">
+                    <!-- Sub-step 1: Profile -->
+                    <div id="signup-view-identity">
+                        <h1 class="auth-heading">Who are you?</h1>
+                        <p class="auth-desc">Build your profile to personalize the engine.</p>
+                        <div class="auth-form-stack" style="margin-bottom: 24px;">
                             <div class="auth-field">
-                                <label for="auth-job-input">Role</label>
-                                <input type="text" id="auth-job-input" placeholder="e.g. Designer" autocomplete="off">
+                                <label for="auth-alias-input">Name</label>
+                                <input type="text" id="auth-alias-input" placeholder="What should we call you?"
+                                    autocomplete="off">
                             </div>
-                            <div class="auth-field">
-                                <label for="auth-food-input">Diet</label>
-                                <input type="text" id="auth-food-input" placeholder="e.g. Vegan" autocomplete="off">
+                            <div class="auth-row">
+                                <div class="auth-field">
+                                    <label for="auth-job-input">Role</label>
+                                    <input type="text" id="auth-job-input" placeholder="e.g. Designer"
+                                        autocomplete="off">
+                                </div>
+                                <div class="auth-field">
+                                    <label for="auth-food-input">Diet</label>
+                                    <input type="text" id="auth-food-input" placeholder="e.g. Vegan" autocomplete="off">
+                                </div>
                             </div>
                         </div>
-                        <div class="auth-field" style="margin-top: 8px;">
-                            <label style="margin-bottom: 12px; display: block;">Workspace Aesthetic</label>
+                        <button type="button" class="btn-auth-primary" id="btn-signup-to-setup">Continue</button>
+                    </div>
+
+                    <!-- Sub-step 2: Aesthetic & Security -->
+                    <div id="signup-view-setup" class="hide">
+                        <h1 class="auth-heading">Workspace Kit</h1>
+                        <p class="auth-desc">Choose your look and secure your access.</p>
+
+                        <div class="auth-field" style="margin-bottom: 24px;">
+                            <label style="margin-bottom: 12px; display: block;">Aesthetic</label>
                             <div class="theme-grid" id="auth-theme-picker">
                                 <button type="button" class="theme-chip active" data-color="#C5E1A5">
                                     <span class="chip-color" style="background:#C5E1A5;"></span>
@@ -135,83 +147,85 @@
                                 </button>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="auth-method-toggle">
-                        <button type="button" class="switch-btn active" data-target="mode-pin">PIN Lock</button>
-                        <button type="button" class="switch-btn" data-target="mode-email">Email Sync</button>
-                    </div>
-
-                    <div id="mode-pin" class="tab-content active">
-                        <div class="auth-pin-wrap">
-                            <input type="password" id="auth-pin-setup" class="pin-entry" maxlength="4"
-                                placeholder="••••" inputmode="numeric">
-                            <button type="button" class="btn-auth-primary" id="btn-auth-signup">Create
-                                Workspace</button>
+                        <div class="auth-method-toggle">
+                            <button type="button" class="switch-btn active" data-target="mode-pin">PIN</button>
+                            <button type="button" class="switch-btn" data-target="mode-email">Sync</button>
                         </div>
-                    </div>
 
-                    <div id="mode-email" class="tab-content">
-                        <div class="auth-pin-wrap">
-                            <div class="auth-field">
-                                <label for="auth-email-input">Email</label>
-                                <input type="email" id="auth-email-input" placeholder="your@email.com">
+                        <div id="mode-pin" class="tab-content active">
+                            <div class="auth-pin-wrap">
+                                <input type="password" id="auth-pin-setup" class="pin-entry" maxlength="4"
+                                    placeholder="••••" inputmode="numeric">
+                                <button type="button" class="btn-auth-primary" id="btn-auth-signup">Create
+                                    Workspace</button>
                             </div>
-                            <button type="button" class="btn-auth-primary" id="btn-magic-signup"><i data-lucide="mail"
-                                    style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-right:6px;"></i>Send
-                                Magic Link</button>
                         </div>
-                    </div>
 
-                    <div class="auth-footer">
-                        <p style="font-size:var(--tx-sm);color:#888;">Already have an account? <button type="button"
-                                id="btn-goto-login"
-                                style="color:var(--clr-ink);font-weight:var(--wght-bold);text-decoration:underline;text-underline-offset:3px;">Sign
-                                in</button></p>
+                        <div id="mode-email" class="tab-content">
+                            <div class="auth-pin-wrap">
+                                <div class="auth-field">
+                                    <input type="email" id="auth-email-input" placeholder="your@email.com">
+                                </div>
+                                <button type="button" class="btn-auth-primary" id="btn-magic-signup"><i
+                                        data-lucide="mail"
+                                        style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-right:6px;"></i>Send
+                                    Magic Link</button>
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn-ghost" id="btn-signup-to-identity"
+                            style="width:100%; margin-top:20px;">Back to Details</button>
+                    </div>
+                </div>
+                <div class="auth-footer">
+                    <p style="font-size:var(--tx-sm);color:#888;">Already have an account? <button type="button"
+                            id="btn-goto-login"
+                            style="color:var(--clr-ink);font-weight:var(--wght-bold);text-decoration:underline;text-underline-offset:3px;">Sign
+                            in</button></p>
+                </div>
+            </div>
+
+            <div id="auth-login-layer" class="hide">
+                <div class="engine-brand clickable auth-header-brand">WFTD <span>Engine</span></div>
+                <h1 class="auth-heading" id="auth-welcome-back">Welcome back</h1>
+                <p class="auth-desc">Enter your credentials to resume.</p>
+
+                <div class="auth-method-toggle">
+                    <button type="button" class="switch-btn active" data-target="login-mode-pin">PIN</button>
+                    <button type="button" class="switch-btn" data-target="login-mode-email">Email</button>
+                </div>
+
+                <div id="login-mode-pin" class="tab-content active">
+                    <div class="auth-pin-wrap">
+                        <input type="password" id="auth-pin-login" class="pin-entry" maxlength="4" placeholder="••••"
+                            inputmode="numeric">
+                        <button type="button" class="btn-auth-primary" id="btn-auth-login">Unlock</button>
                     </div>
                 </div>
 
-                <div id="auth-login-layer" class="hide">
-                    <div class="auth-brand">WFTD <span>Engine</span></div>
-                    <h1 class="auth-heading" id="auth-welcome-back">Welcome back</h1>
-                    <p class="auth-desc">Enter your credentials to resume.</p>
-
-                    <div class="auth-method-toggle">
-                        <button type="button" class="switch-btn active" data-target="login-mode-pin">PIN</button>
-                        <button type="button" class="switch-btn" data-target="login-mode-email">Email</button>
-                    </div>
-
-                    <div id="login-mode-pin" class="tab-content active">
-                        <div class="auth-pin-wrap">
-                            <input type="password" id="auth-pin-login" class="pin-entry" maxlength="4"
-                                placeholder="••••" inputmode="numeric">
-                            <button type="button" class="btn-auth-primary" id="btn-auth-login">Unlock</button>
+                <div id="login-mode-email" class="tab-content">
+                    <div class="auth-pin-wrap">
+                        <div class="auth-field">
+                            <label for="auth-email-login">Email</label>
+                            <input type="email" id="auth-email-login" placeholder="your@email.com">
                         </div>
-                    </div>
-
-                    <div id="login-mode-email" class="tab-content">
-                        <div class="auth-pin-wrap">
-                            <div class="auth-field">
-                                <label for="auth-email-login">Email</label>
-                                <input type="email" id="auth-email-login" placeholder="your@email.com">
-                            </div>
-                            <button type="button" class="btn-auth-primary" id="btn-magic-login"><i data-lucide="mail"
-                                    style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-right:6px;"></i>Send
-                                Login Link</button>
-                        </div>
-                    </div>
-
-                    <div class="auth-footer">
-                        <p style="font-size:var(--tx-sm);color:#888;">New here? <button type="button"
-                                id="btn-goto-signup"
-                                style="color:var(--clr-ink);font-weight:var(--wght-bold);text-decoration:underline;text-underline-offset:3px;">Create
-                                account</button></p>
-                        <button type="button" class="btn-ghost reset-btn" id="btn-auth-reset"
-                            style="margin-top:12px;">Reset / Switch account</button>
+                        <button type="button" class="btn-auth-primary" id="btn-magic-login"><i data-lucide="mail"
+                                style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-right:6px;"></i>Send
+                            Login Link</button>
                     </div>
                 </div>
 
-                <p id="auth-error" class="feedback-txt auth-error"></p>
+                <div class="auth-footer">
+                    <p style="font-size:var(--tx-sm);color:#888;">New here? <button type="button" id="btn-goto-signup"
+                            style="color:var(--clr-ink);font-weight:var(--wght-bold);text-decoration:underline;text-underline-offset:3px;">Create
+                            account</button></p>
+                    <button type="button" class="btn-ghost reset-btn" id="btn-auth-reset" style="margin-top:12px;">Reset
+                        / Switch account</button>
+                </div>
+            </div>
+
+            <p id="auth-error" class="feedback-txt auth-error"></p>
             </div>
         </section>
 
@@ -466,10 +480,7 @@
         <!-- App Surface -->
         <main id="app-surface" class="surface-main hide" aria-hidden="true">
             <nav class="top-nav">
-                <div class="brand-lockup">
-                    <span class="brand-mark">WFTD</span>
-                    <span class="brand-sub">Engine</span>
-                </div>
+                <div class="engine-brand">WFTD <span>Engine</span></div>
                 <div class="nav-utils">
                     <time id="meta-time" class="meta-txt"></time>
                     <button type="button" class="avatar-node" id="profile-open-btn" title="AI Context Profile"
