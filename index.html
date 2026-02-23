@@ -232,6 +232,11 @@
 
         <!-- Landing Experience (Init State) -->
         <section id="landing-view" class="landing-surface hide" aria-hidden="true">
+            <!-- Zeigarnik Effect: Visual Progress Bar -->
+            <div class="wizard-progress-track">
+                <div class="wizard-progress-fill" id="wizard-progress"></div>
+            </div>
+
             <form id="engine-form" class="engine-form immersive-form">
                 <!-- Step 1: Goal -->
                 <div class="step-card active" data-step="1">
@@ -445,11 +450,21 @@
                         </label>
                         <menu class="action-dock immersive-dock">
                             <button type="button" class="btn-ghost back-btn">Back</button>
-                            <button type="submit" class="btn-solid submit-btn">
+                            <button type="submit" class="btn-solid submit-btn" id="generate-schedule-btn">
                                 Generate Schedule
                                 <i data-lucide="arrow-right" style="width: 14px; height: 14px; stroke-width: 3px;"></i>
                             </button>
                         </menu>
+
+                        <!-- Phase 4: Labor Illusion State -->
+                        <div id="labor-illusion-state" class="hide" style="margin-top: 24px; text-align: center;">
+                            <div class="loader-spinner"></div>
+                            <p class="type-display"
+                                style="font-size: 20px; font-weight: var(--wght-bold); margin-top: 16px;">Compiling your
+                                insights...</p>
+                            <p id="labor-illusion-text" style="color: #666; font-size: var(--tx-sm); margin-top: 8px;">
+                                Aligning schedule parameters</p>
+                        </div>
                     </div>
                 </div>
             </form>

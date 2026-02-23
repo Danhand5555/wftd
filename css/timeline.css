@@ -203,20 +203,33 @@
 .node-title-row {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: var(--space-8);
     gap: var(--space-12);
 }
 
+/* Grouping Title + Meta on the Left */
 .title-left-group {
     display: flex;
-    align-items: center;
-    gap: var(--space-8);
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    /* Take up remaining space */
 }
 
 .title-left-group h3 {
     margin-bottom: 0;
     font-size: var(--tx-md);
+    line-height: 1.2;
+}
+
+/* Grouping Actions on the Right (Fitts's Law) */
+.action-right-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+    flex-shrink: 0;
+    /* Prevent squishing */
 }
 
 .pill-check {

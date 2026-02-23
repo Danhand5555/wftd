@@ -111,6 +111,8 @@ export class WizardUI {
                 nextCard.classList.remove('hidden-right');
                 nextCard.classList.add('active');
 
+                this.updateStepCounters(); // Zeigarnik progress bar sync
+
                 setTimeout(() => {
                     const nextInput = nextCard.querySelector('input, textarea');
                     if (nextInput) nextInput.focus();
@@ -145,6 +147,8 @@ export class WizardUI {
             if (prevCard) {
                 prevCard.classList.remove('hidden-left');
                 prevCard.classList.add('active');
+
+                this.updateStepCounters(); // Zeigarnik progress bar sync
             }
         }
     }
@@ -169,13 +173,22 @@ export class WizardUI {
     }
 
     updateStepCounters() {
-        const { activeFlow } = store.getState();
+        const { activeFlow, currentStep } = store.getState();
         activeFlow.forEach((stepNum, index) => {
             const counter = document.querySelector(`.step-card[data-step="${stepNum}"] .step-counter`);
             if (counter) {
                 counter.textContent = `${index + 1} of ${activeFlow.length}`;
             }
         });
+
+        // Zeigarnik Effect: Dynamic Progress Bar
+        const progressFill = $('#wizard-progress');
+        if (progressFill) {
+            const currentIndex = activeFlow.indexOf(currentStep);
+            // Calculate progress (start at a small non-zero baseline so they see it exists)
+            const pct = Math.max(5, ((currentIndex + 1) / activeFlow.length) * 100);
+            progressFill.style.width = `${pct}%`;
+        }
     }
 
     showFeedback(nodeId, text) {

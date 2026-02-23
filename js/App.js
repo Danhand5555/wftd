@@ -149,12 +149,23 @@ class App {
         const data = new FormData(form);
         const payload = Object.fromEntries(data.entries());
 
-        const submitBtn = $('.submit-btn');
-        const originalText = submitBtn ? submitBtn.innerHTML : '';
-        if (submitBtn) {
-            submitBtn.innerHTML = 'Synthesizing with AI...';
-            submitBtn.style.opacity = '0.7';
-            submitBtn.disabled = true;
+        const submitBtn = $('#generate-schedule-btn');
+        const actionDock = submitBtn ? submitBtn.closest('.action-dock') : null;
+        const laborState = $('#labor-illusion-state');
+        const laborText = $('#labor-illusion-text');
+
+        // Hide standard controls, show Labor Illusion state
+        if (actionDock) actionDock.style.display = 'none';
+        if (laborState) {
+            laborState.classList.remove('hide');
+
+            // Sequence of psychological loading strings
+            const texts = ["Aligning schedule parameters", "Analyzing location context", "Optimizing time blocks", "Finalizing itinerary"];
+            let i = 0;
+            this._laborInterval = setInterval(() => {
+                i = (i + 1) % texts.length;
+                if (laborText) laborText.textContent = texts[i] + "...";
+            }, 1800);
         }
 
         try {
@@ -183,12 +194,11 @@ class App {
             console.error(err);
             alert("AI generation failed. Fallback triggered.");
             // Offline fallback logic here...
-        }
-
-        if (submitBtn) {
-            submitBtn.innerHTML = originalText;
-            submitBtn.style.opacity = '1';
-            submitBtn.disabled = false;
+        } finally {
+            // Cleanup Labor Illusion
+            if (this._laborInterval) clearInterval(this._laborInterval);
+            if (actionDock) actionDock.style.display = 'flex';
+            if (laborState) laborState.classList.add('hide');
         }
     }
 

@@ -61,17 +61,19 @@ export class TimelineUI {
                 <div class="node-surface">
                     <div class="node-title-row">
                         <div class="title-left-group">
+                            <h3>${node.t}</h3>
+                            <p>${node.d}</p>
+                        </div>
+                        <div class="action-right-group">
                             <button type="button" class="pill-check ${state.done ? 'is-done' : ''}" data-task-id="${taskId}">
                                 <i data-lucide="${state.done ? 'check' : 'square'}"></i>
                             </button>
-                            <h3>${node.t}</h3>
-                        </div>
-                        <div class="large-clock ${state.running ? 'is-running' : ''}" data-task-id="${taskId}">
-                            <div class="clock-icon"><i data-lucide="${state.running ? 'pause' : 'play'}"></i></div>
-                            <span class="timer-display">${this.formatElapsed(state.elapsed)}</span>
+                            <div class="large-clock ${state.running ? 'is-running' : ''}" data-task-id="${taskId}">
+                                <div class="clock-icon"><i data-lucide="${state.running ? 'pause' : 'play'}"></i></div>
+                                <span class="timer-display">${this.formatElapsed(state.elapsed)}</span>
+                            </div>
                         </div>
                     </div>
-                    <p>${node.d}</p>
                     <div class="pill-cluster">
                         <span class="data-pill pill-${node.cat}">${node.cat}</span>
                         <span class="data-pill">TR: ${node.dr}</span>
