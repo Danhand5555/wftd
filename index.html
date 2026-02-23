@@ -115,6 +115,14 @@
                             </div>
                         </div>
                         <button type="button" class="btn-auth-primary" id="btn-signup-to-setup">Continue</button>
+
+                        <div class="auth-footer"
+                            style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--clr-chrome);">
+                            <p style="font-size:var(--tx-sm);color:#888;">Already have an account? <button type="button"
+                                    id="btn-goto-login"
+                                    style="color:var(--clr-ink);font-weight:var(--wght-bold);text-decoration:underline;text-underline-offset:3px;">Sign
+                                    in</button></p>
+                        </div>
                     </div>
 
                     <!-- Sub-step 2: Aesthetic & Security -->
@@ -178,12 +186,6 @@
                             style="width:100%; margin-top:20px;">Back to Details</button>
                     </div>
                 </div>
-                <div class="auth-footer">
-                    <p style="font-size:var(--tx-sm);color:#888;">Already have an account? <button type="button"
-                            id="btn-goto-login"
-                            style="color:var(--clr-ink);font-weight:var(--wght-bold);text-decoration:underline;text-underline-offset:3px;">Sign
-                            in</button></p>
-                </div>
             </div>
 
             <div id="auth-login-layer" class="hide">
@@ -216,12 +218,13 @@
                     </div>
                 </div>
 
-                <div class="auth-footer">
+                <div class="auth-footer"
+                    style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--clr-chrome);">
                     <p style="font-size:var(--tx-sm);color:#888;">New here? <button type="button" id="btn-goto-signup"
                             style="color:var(--clr-ink);font-weight:var(--wght-bold);text-decoration:underline;text-underline-offset:3px;">Create
                             account</button></p>
-                    <button type="button" class="btn-ghost reset-btn" id="btn-auth-reset" style="margin-top:12px;">Reset
-                        / Switch account</button>
+                    <button type="button" class="btn-ghost" id="btn-auth-reset"
+                        style="width:100%; margin-top:16px;">Reset Application</button>
                 </div>
             </div>
 

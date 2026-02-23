@@ -217,6 +217,25 @@
     margin-bottom: 32px;
 }
 
+/* Footers */
+.auth-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.auth-footer p {
+    margin: 0;
+}
+
+.auth-footer button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
 /* Heading */
 .auth-heading {
     font-size: clamp(24px, 8vw, 32px);
@@ -353,26 +372,28 @@
 /* Tabs */
 .auth-method-toggle {
     display: flex;
-    border: 1px solid var(--clr-chrome);
-    border-radius: var(--radii-hard);
+    border: 3px solid var(--clr-ink);
+    border-radius: var(--radii-soft);
     overflow: hidden;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
+    background: var(--clr-paper);
 }
 
 .switch-btn {
     flex: 1;
-    padding: 10px;
+    padding: 12px;
     font-size: var(--tx-sm);
-    font-weight: var(--wght-medium);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     color: #888;
-    text-align: center;
-    transition: all 0.15s;
-    border-right: 1px solid var(--clr-chrome);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.2s var(--ease-snappy);
 }
 
-.switch-btn:last-child {
-    border-right: none;
-}
+
 
 .switch-btn.active {
     background: var(--clr-ink);
