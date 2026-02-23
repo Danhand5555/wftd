@@ -372,32 +372,27 @@ export function _mountSurface(state, itinerary, insights) {
     track.innerHTML = itinerary.map((node, i) => {
         const taskId = `task-${i}`;
         const state = taskStates[taskId] || { done: false, elapsed: 0, running: false };
-        const isPast = node.isPast; // we might need to recalculate this or use the existing logic
 
         return `
-        <article class="track-node ${state.done ? 'status-done' : ''}" data-index="${i}" data-task-id="${taskId}" style="animation-delay: ${i * 0.12}s;" data-info="${JSON.stringify(node).replace(/"/g, '&quot;')}">
+        <article class="track-node ${state.done ? 'status-done' : ''}" data-index="${i}" data-task-id="${taskId}" style="animation-delay: ${i * 0.12}s; cursor: pointer;" data-info="${JSON.stringify(node).replace(/"/g, '&quot;')}">
             <time class="node-meta">${_formatTo12h(node.time)}</time>
             <div class="node-surface">
-                <div class="task-tracker">
-                    <button type="button" class="btn-check ${state.done ? 'is-done' : ''}" onclick="window._toggleTaskDone('${taskId}')">
-                        <i data-lucide="${state.done ? 'check-circle-2' : 'circle'}"></i>
+                <div class="node-title-row">
+                    <button type="button" class="pill-check ${state.done ? 'is-done' : ''}" onclick="event.stopPropagation(); window._toggleTaskDone('${taskId}')">
+                        <i data-lucide="${state.done ? 'check' : 'square'}"></i>
                     </button>
-                    <div class="task-timer-block">
-                        <span class="timer-display">${_formatElapsed(state.elapsed)}</span>
-                        <div class="timer-controls">
-                            <button type="button" class="btn-timer-toggle" onclick="window._toggleTaskTimer('${taskId}')">
-                                <i data-lucide="${state.running ? 'pause' : 'play'}"></i>
-                            </button>
-                        </div>
-                    </div>
+                    <h3>${node.t}</h3>
                 </div>
-                <h3>${node.t}</h3>
                 <p>${node.d}</p>
                 <div class="pill-cluster">
                     <span class="data-pill pill-${node.cat}">${node.cat}</span>
                     <span class="data-pill">TR: ${node.dr}</span>
-                    ${node.loc ? '<span class="data-pill" onclick="window._openMap(\'' + node.loc + '\')">📍 Map</span>' : ''}
+                    ${node.loc ? '<span class="data-pill" onclick="event.stopPropagation(); window._openMap(\'' + node.loc + '\')">📍 Map</span>' : ''}
                     ${typeof node.cost === 'number' && node.cost > 0 ? '<span class="data-pill val-green">$$</span>' : ''}
+                    <span class="data-pill pill-timer ${state.running ? 'pill-timer-active' : ''}" data-task-id="${taskId}" onclick="event.stopPropagation(); window._toggleTaskTimer('${taskId}')">
+                        <i data-lucide="${state.running ? 'pause' : 'play'}" style="width:10px;height:10px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>
+                        <span class="timer-display">${_formatElapsed(state.elapsed)}</span>
+                    </span>
                 </div>
             </div>
         </article>
