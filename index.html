@@ -194,24 +194,25 @@
                 <p class="auth-desc">Enter your credentials to resume.</p>
 
                 <div class="auth-method-toggle">
-                    <button type="button" class="switch-btn active" data-target="login-mode-pin">PIN</button>
-                    <button type="button" class="switch-btn" data-target="login-mode-email">Email</button>
+                    <button type="button" class="switch-btn active" data-target="login-mode-email">Email</button>
+                    <button type="button" class="switch-btn" data-target="login-mode-pin">PIN</button>
                 </div>
 
-                <div id="login-mode-pin" class="tab-content active">
+                <div id="login-mode-email" class="tab-content active">
                     <div class="auth-pin-wrap">
-                        <input type="password" id="auth-pin-login" class="pin-entry" maxlength="4" placeholder="••••"
-                            inputmode="numeric">
-                        <button type="button" class="btn-auth-primary" id="btn-auth-login">Unlock</button>
+                        <input type="email" id="auth-email-login" class="pin-entry" placeholder="your@email.com">
+                        <button type="button" class="btn-auth-primary" id="btn-magic-login">
+                            <i data-lucide="mail" style="width:18px;height:18px;margin-right:10px;"></i>
+                            Send Magic Link
+                        </button>
                     </div>
                 </div>
 
-                <div id="login-mode-email" class="tab-content">
+                <div id="login-mode-pin" class="tab-content">
                     <div class="auth-pin-wrap">
-                        <input type="email" id="auth-email-login" class="pin-entry" placeholder="your@email.com">
-                        <button type="button" class="btn-auth-primary" id="btn-magic-login"><i data-lucide="mail"
-                                style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-right:8px;"></i>Send
-                            Login Link</button>
+                        <input type="password" id="auth-pin-login" class="pin-entry" maxlength="4" placeholder="••••"
+                            inputmode="numeric">
+                        <button type="button" class="btn-auth-primary" id="btn-auth-login">Unlock Workspace</button>
                     </div>
                 </div>
 
