@@ -141,8 +141,8 @@ export async function _initAuth() {
     const savedTheme = localStorage.getItem('wftd_theme');
     const initialTheme = savedTheme || colors[Math.floor(Math.random() * colors.length)] || '#C5E1A5';
 
-    // 2. Apply the theme
-    _applyTheme(initialTheme);
+    // 2. Preview the theme (without saving yet if it's the random one)
+    document.documentElement.style.setProperty('--clr-brand', initialTheme);
 
     // 3. Set active theme chip in UI & set up listeners
     themeChips.forEach(chip => {
@@ -153,8 +153,7 @@ export async function _initAuth() {
         chip.addEventListener('click', () => {
             themeChips.forEach(c => c.classList.remove('active'));
             chip.classList.add('active');
-            localStorage.setItem('wftd_theme', chipColor);
-            _applyTheme(chipColor);
+            _applyTheme(chipColor); // This helper saves to localStorage
         });
     });
 
