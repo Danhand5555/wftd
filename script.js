@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', _initEngine);
 async function _initEngine() {
     // 1. Initialize Modules
     await _initAuth();
+    if (window.lucide) window.lucide.createIcons();
     _initChat();
     setTimeout(_initLocPicker, 200);
     setTimeout(_initFileHandling, 300);
