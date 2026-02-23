@@ -81,15 +81,10 @@ export async function _sendChatMessage() {
 export function _initChat() {
     const panel = $('#chat-panel'), toggleBtn = $('#chat-toggle-btn'), header = $('.chat-header'), floatBtn = $('#chat-float-btn'), sendBtn = $('#chat-send-btn'), input = $('#chat-input');
     if (!panel) return;
-    panel.classList.add('hide');
+
     header.addEventListener('click', () => panel.classList.toggle('collapsed'));
     toggleBtn.addEventListener('click', (e) => { e.stopPropagation(); panel.classList.toggle('collapsed'); });
     sendBtn.addEventListener('click', _sendChatMessage);
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter') _sendChatMessage(); });
     if (floatBtn) floatBtn.addEventListener('click', () => { panel.classList.remove('hide'); panel.classList.remove('collapsed'); floatBtn.classList.add('hide'); });
-}
-
-export function _showChat() {
-    const panel = $('#chat-panel');
-    if (panel) { panel.classList.remove('hide'); panel.classList.remove('collapsed'); }
 }

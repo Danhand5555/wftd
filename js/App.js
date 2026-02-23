@@ -27,11 +27,12 @@ class App {
     }
 
     async init() {
+        this.bindEvents();
+
         await _initAuth();
         if (window.lucide) window.lucide.createIcons();
         _initChat();
 
-        this.bindEvents();
         this.injectDateMeta();
         this.initLocPicker();
 
@@ -52,6 +53,11 @@ class App {
                 const insights = ['Using default schedule.', 'No custom budget or limits applied.'];
                 // Minimal fallback itinerary
                 const itinerary = [{ time: '9:00 AM', t: 'Focus Block', d: 'Default routine.', cat: 'work', dr: '4h' }];
+
+                const today = new Date().toDateString();
+                localStorage.setItem('wftd_today_date', today);
+                localStorage.setItem('wftd_today_schedule', JSON.stringify({ state: payload, itinerary, insights }));
+
                 this.mountSurface(payload, itinerary, insights);
             });
         }
