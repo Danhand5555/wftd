@@ -221,10 +221,21 @@ export function _handleLogin() {
     }
 }
 
-export function _unlockWorkspace(alias) {
+export async function _unlockWorkspace(alias) {
     $('#auth-error').textContent = "";
     const authLayer = $('#auth-view');
     authLayer.classList.add('hide');
+
+    // If the user is authenticated via Supabase but has no full_name, prompt for it
+    const user = await getUser();
+    if (user && !user.user_metadata?.full_name) {
+        const promptedName = prompt('Welcome! What should we call you?', alias || '');
+        if (promptedName && promptedName.trim()) {
+            alias = promptedName.trim();
+            localStorage.setItem('wftd_alias', alias);
+            updateUserName(alias);
+        }
+    }
 
     // Setup skip check
     const today = new Date().toDateString();
