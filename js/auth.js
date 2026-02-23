@@ -1,12 +1,23 @@
 import { $, $$ } from './utils.js';
 import { _mountSurface, _renderAllStepSuggestions } from './ui.js';
-import { signInWithGoogle, getUser, signOut, signInWithMagicLink } from './supabase.js';
+import { signInWithGoogle, getUser, signOut, signInWithMagicLink, supabase } from './supabase.js';
 
 export async function _initAuth() {
-    // 1. Check for Supabase Session (AI/Cloud Sync)
+    // Listen for auth state changes (handles magic link callback)
+    if (supabase) {
+        supabase.auth.onAuthStateChange((event, session) => {
+            console.log('[Auth] State change:', event);
+            if (event === 'SIGNED_IN' && session?.user) {
+                const user = session.user;
+                localStorage.setItem('wftd_alias', user.user_metadata?.full_name || user.email.split('@')[0]);
+                _unlockWorkspace(localStorage.getItem('wftd_alias'));
+            }
+        });
+    }
+
+    // 1. Check for existing Supabase Session
     const user = await getUser();
     if (user) {
-        // Logged in with Google or Magic Link
         localStorage.setItem('wftd_alias', user.user_metadata.full_name || user.email.split('@')[0]);
         _unlockWorkspace(localStorage.getItem('wftd_alias'));
         return;
