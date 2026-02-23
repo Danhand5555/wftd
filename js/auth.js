@@ -1,4 +1,4 @@
-import { $ } from './utils.js';
+import { $, $$ } from './utils.js';
 import { _mountSurface, _renderAllStepSuggestions } from './ui.js';
 import { signInWithGoogle, getUser, signOut, signInWithMagicLink } from './supabase.js';
 
@@ -26,7 +26,17 @@ export async function _initAuth() {
         $('#auth-login-layer').classList.add('hide');
     }
 
-    // Events
+    // Tab Switching Logic
+    $$('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            $$('.tab-btn').forEach(b => b.classList.remove('active'));
+            $$('.tab-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            const target = btn.dataset.target;
+            $('#' + target).classList.add('active');
+        });
+    });
+
     $('#btn-auth-signup')?.addEventListener('click', _handleSignup);
     $('#btn-auth-login')?.addEventListener('click', _handleLogin);
 
