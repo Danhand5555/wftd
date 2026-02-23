@@ -1490,16 +1490,16 @@ input {
     transform: scale(1.08);
 }
 
-/* Google Auth Buttons */
-.btn-google {
+/* Magic Link Auth Buttons */
+.btn-magic {
     width: 100%;
-    background: #ffffff;
-    color: #444;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: var(--clr-ink);
+    color: var(--clr-paper);
+    border: 1px solid var(--clr-ink);
     border-radius: var(--radii-soft);
     padding: 12px;
     font-size: var(--tx-base);
-    font-weight: var(--wght-medium);
+    font-weight: var(--wght-bold);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1508,10 +1508,13 @@ input {
     margin-top: 12px;
 }
 
-.btn-google:hover {
-    background: #f8f8f8;
-    border-color: rgba(0, 0, 0, 0.2);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+.btn-magic:hover {
+    background: #333;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-magic span {
+    font-size: 1.2em;
 }
 
 .auth-separator {

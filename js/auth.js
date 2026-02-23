@@ -1,14 +1,13 @@
 import { $ } from './utils.js';
 import { _mountSurface, _renderAllStepSuggestions } from './ui.js';
-import { signInWithGoogle, getUser, signOut } from './supabase.js';
+import { signInWithGoogle, getUser, signOut, signInWithMagicLink } from './supabase.js';
 
 export async function _initAuth() {
     // 1. Check for Supabase Session (AI/Cloud Sync)
     const user = await getUser();
     if (user) {
-        // Logged in with Google
+        // Logged in with Google or Magic Link
         localStorage.setItem('wftd_alias', user.user_metadata.full_name || user.email.split('@')[0]);
-        // We bypass PIN for Google Auth users as they are already verified by Google
         _unlockWorkspace(localStorage.getItem('wftd_alias'));
         return;
     }
@@ -30,14 +29,38 @@ export async function _initAuth() {
     // Events
     $('#btn-auth-signup')?.addEventListener('click', _handleSignup);
     $('#btn-auth-login')?.addEventListener('click', _handleLogin);
-    $('#btn-google-login')?.addEventListener('click', signInWithGoogle);
-    $('#btn-google-signup')?.addEventListener('click', signInWithGoogle);
+
+    // Magic Link Handlers
+    $('#btn-magic-signup')?.addEventListener('click', () => _handleMagicLink('#auth-email-input'));
+    $('#btn-magic-login')?.addEventListener('click', () => _handleMagicLink('#auth-email-login'));
 
     $('#btn-auth-reset')?.addEventListener('click', async () => {
         await signOut();
         localStorage.clear();
         location.reload();
     });
+}
+
+export async function _handleMagicLink(selector) {
+    const email = $(selector).value.trim();
+    const errorNode = $('#auth-error');
+
+    if (!email || !email.includes('@')) {
+        errorNode.textContent = "Please enter a valid email.";
+        return;
+    }
+
+    try {
+        errorNode.textContent = "Sending magic link...";
+        errorNode.style.color = "var(--clr-brand-dim)";
+        await signInWithMagicLink(email);
+        errorNode.textContent = "Check your email for the login link!";
+        errorNode.style.color = "#007054";
+    } catch (e) {
+        console.error('Magic Link Error:', e);
+        errorNode.textContent = "Error sending link. Try again.";
+        errorNode.style.color = "var(--clr-alert)";
+    }
 }
 
 export function _handleSignup() {

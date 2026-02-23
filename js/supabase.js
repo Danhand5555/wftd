@@ -61,6 +61,21 @@ export async function signInWithGoogle() {
 }
 
 /**
+ * Auth: Sign in with Magic Link (Email)
+ */
+export async function signInWithMagicLink(email) {
+    if (!supabase) return;
+    const { data, error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+            emailRedirectTo: window.location.origin,
+        }
+    });
+    if (error) throw error;
+    return data;
+}
+
+/**
  * Auth: Get User
  */
 export async function getUser() {
