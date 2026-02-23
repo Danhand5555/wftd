@@ -3,6 +3,8 @@
  * Manages global application state to decouple UI from logic.
  */
 
+import { updateUserProfile } from '../supabase.js';
+
 const _getRawItem = (key, fallback = '') => typeof window !== 'undefined' && window.localStorage ? localStorage.getItem(key) || fallback : fallback;
 
 class Store {
@@ -48,6 +50,18 @@ class Store {
         if (profileUpdates.food !== undefined) localStorage.setItem('wftd_food', profileUpdates.food);
         if (profileUpdates.memory !== undefined) localStorage.setItem('wftd_memory', profileUpdates.memory);
         if (profileUpdates.theme !== undefined) localStorage.setItem('wftd_theme', profileUpdates.theme);
+
+        // Map internal keys to Supabase Metadata keys
+        const metaUpdate = {};
+        if (profileUpdates.alias !== undefined) metaUpdate.full_name = profileUpdates.alias;
+        if (profileUpdates.theme !== undefined) metaUpdate.theme_color = profileUpdates.theme;
+        if (profileUpdates.job !== undefined) metaUpdate.job = profileUpdates.job;
+        if (profileUpdates.food !== undefined) metaUpdate.food = profileUpdates.food;
+        if (profileUpdates.memory !== undefined) metaUpdate.memory = profileUpdates.memory;
+
+        if (Object.keys(metaUpdate).length > 0) {
+            updateUserProfile(metaUpdate);
+        }
     }
 
     setLocation(name, lat, lon) {

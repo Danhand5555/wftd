@@ -1,5 +1,6 @@
 import { $, $$ } from './utils.js';
 import { signInWithGoogle, getUser, signOut, signInWithMagicLink, updateUserName, supabase } from './supabase.js';
+import { store } from './store/index.js';
 
 
 export async function _initAuth() {
@@ -318,8 +319,22 @@ export async function _unlockWorkspace(alias) {
     // If the user is authenticated via Supabase but has no full_name, prompt for it
     const user = await getUser();
 
-    // Theme application
-    const themeColor = user?.user_metadata?.theme_color || localStorage.getItem('wftd_theme');
+    let themeColor = localStorage.getItem('wftd_theme');
+
+    // Hydrate store directly from Supabase DB on login
+    if (user && user.user_metadata) {
+        const meta = user.user_metadata;
+        if (meta.theme_color) themeColor = meta.theme_color;
+
+        store.setProfile({
+            alias: meta.full_name || alias,
+            job: meta.job || undefined,
+            food: meta.food || undefined,
+            memory: meta.memory || undefined,
+            theme: meta.theme_color || undefined
+        });
+    }
+
     if (themeColor) {
         document.documentElement.style.setProperty('--clr-brand', themeColor);
     }
@@ -330,6 +345,7 @@ export async function _unlockWorkspace(alias) {
             alias = promptedName.trim();
             localStorage.setItem('wftd_alias', alias);
             updateUserName(alias);
+            store.setProfile({ alias: alias });
         }
     }
 
