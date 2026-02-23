@@ -1,6 +1,7 @@
 import { $, _haversineKm, _formatMinutes, _parseTimeParts, _formatTo12h } from './utils.js';
 import { CORE_REGIMEN, WEATHER_CODES } from './config.js';
 import { _mountSurface, _updateWeatherUI } from './ui.js';
+import { saveScheduleToDB } from './supabase.js';
 
 export async function _handleCompile(e) {
     e.preventDefault();
@@ -85,6 +86,10 @@ export async function _handleCompile(e) {
     const today = new Date().toDateString();
     localStorage.setItem('wftd_today_date', today);
     localStorage.setItem('wftd_today_schedule', JSON.stringify({ state: payload, itinerary, insights }));
+
+    // Optional: Save to Supabase Cloud
+    const alias = localStorage.getItem('wftd_alias') || 'Guest';
+    saveScheduleToDB(alias, { state: payload, itinerary, insights });
 
     if (submitBtn) {
         submitBtn.innerHTML = originalText;

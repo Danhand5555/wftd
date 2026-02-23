@@ -1,7 +1,18 @@
 import { $ } from './utils.js';
 import { _mountSurface, _renderAllStepSuggestions } from './ui.js';
+import { signInWithGoogle, getUser, signOut } from './supabase.js';
 
-export function _initAuth() {
+export async function _initAuth() {
+    // 1. Check for Supabase Session (AI/Cloud Sync)
+    const user = await getUser();
+    if (user) {
+        // Logged in with Google
+        localStorage.setItem('wftd_alias', user.user_metadata.full_name || user.email.split('@')[0]);
+        // We bypass PIN for Google Auth users as they are already verified by Google
+        _unlockWorkspace(localStorage.getItem('wftd_alias'));
+        return;
+    }
+
     const alias = localStorage.getItem('wftd_alias');
     const pin = localStorage.getItem('wftd_pin');
 
@@ -17,15 +28,14 @@ export function _initAuth() {
     }
 
     // Events
-    $('#btn-auth-signup').addEventListener('click', _handleSignup);
-    $('#btn-auth-login').addEventListener('click', _handleLogin);
-    $('#btn-auth-reset').addEventListener('click', () => {
-        localStorage.removeItem('wftd_alias');
-        localStorage.removeItem('wftd_pin');
-        localStorage.removeItem('wftd_food');
-        localStorage.removeItem('wftd_job');
-        localStorage.removeItem('wftd_today_schedule');
-        localStorage.removeItem('wftd_today_date');
+    $('#btn-auth-signup')?.addEventListener('click', _handleSignup);
+    $('#btn-auth-login')?.addEventListener('click', _handleLogin);
+    $('#btn-google-login')?.addEventListener('click', signInWithGoogle);
+    $('#btn-google-signup')?.addEventListener('click', signInWithGoogle);
+
+    $('#btn-auth-reset')?.addEventListener('click', async () => {
+        await signOut();
+        localStorage.clear();
         location.reload();
     });
 }

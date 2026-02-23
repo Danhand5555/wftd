@@ -12,9 +12,9 @@ import { _handleExportCalendar } from './js/calendar.js';
 
 document.addEventListener('DOMContentLoaded', _initEngine);
 
-function _initEngine() {
+async function _initEngine() {
     // 1. Initialize Modules
-    _initAuth();
+    await _initAuth();
     _initChat();
     setTimeout(_initLocPicker, 200);
     setTimeout(_initFileHandling, 300);
