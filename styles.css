@@ -2038,27 +2038,44 @@ input {
     margin: 0 10px;
 }
 
-/* Task Tracker — Inline Controls (Notion x Wise Style) */
-
-/* Title row: checkbox + heading inline */
-.node-title-row {
+/* Task Tracker — Left Aligned Clock Layout */
+.node-surface {
+    background: var(--clr-paper);
+    border: 1px solid var(--clr-chrome);
+    padding: var(--space-16);
+    border-radius: var(--radii-hard);
+    transition: box-shadow 0.2s, transform 0.2s;
     display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 4px;
+    gap: var(--space-16);
+    align-items: flex-start;
 }
 
-.node-title-row h3 {
-    margin-bottom: 0;
+.task-tracker-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-12);
+    min-width: 60px;
+    padding-right: var(--space-12);
+    border-right: 1px solid var(--clr-chrome);
+    flex-shrink: 0;
+}
+
+.node-content-right {
+    flex: 1;
+    min-width: 0;
+}
+
+.node-content-right h3 {
+    margin-bottom: 4px;
 }
 
 .pill-check {
     background: transparent;
     border: 2px solid var(--clr-ink);
-    width: 24px;
-    height: 24px;
-    min-width: 24px;
-    border-radius: 4px;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2081,47 +2098,50 @@ input {
 
 .pill-check i,
 .pill-check svg {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
 }
 
-/* Timer pill — sits in the pill-cluster row like other pills */
-.pill-timer {
-    cursor: pointer;
-    border-color: #999;
-    color: #666;
-    display: inline-flex;
+/* Large Left Clock */
+.large-clock {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
+    cursor: pointer;
+    padding: 8px 4px;
+    border-radius: var(--radii-soft);
+    transition: all 0.2s;
     user-select: none;
-    transition: all 0.15s var(--ease-snappy);
-    padding: 6px 12px;
-    font-size: 13px;
+    border: 1px solid transparent;
 }
 
-.pill-timer:hover {
-    border-color: var(--clr-ink);
-    color: var(--clr-ink);
-    background: var(--clr-surface);
+.large-clock:hover {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: var(--clr-chrome);
 }
 
-.pill-timer-active {
-    border-color: var(--clr-ink);
+.large-clock.is-running {
     background: var(--clr-ink);
     color: var(--clr-paper);
+    border-color: var(--clr-ink);
 }
 
-.pill-timer-active:hover {
+.large-clock.is-running:hover {
     background: #333;
-    color: var(--clr-paper);
+}
+
+.clock-icon i,
+.clock-icon svg {
+    width: 20px;
+    height: 20px;
 }
 
 .timer-display {
     font-family: monospace;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0;
-    text-transform: none;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
 }
 
 /* Task Done State */

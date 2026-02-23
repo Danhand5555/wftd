@@ -377,22 +377,25 @@ export function _mountSurface(state, itinerary, insights) {
         <article class="track-node ${state.done ? 'status-done' : ''}" data-index="${i}" data-task-id="${taskId}" style="animation-delay: ${i * 0.12}s; cursor: pointer;" data-info="${JSON.stringify(node).replace(/"/g, '&quot;')}">
             <time class="node-meta">${_formatTo12h(node.time)}</time>
             <div class="node-surface">
-                <div class="node-title-row">
-                    <button type="button" class="pill-check ${state.done ? 'is-done' : ''}">
+                <div class="task-tracker-left">
+                    <button type="button" class="pill-check ${state.done ? 'is-done' : ''}" data-task-id="${taskId}">
                         <i data-lucide="${state.done ? 'check' : 'square'}"></i>
                     </button>
-                    <h3>${node.t}</h3>
-                </div>
-                <p>${node.d}</p>
-                <div class="pill-cluster">
-                    <span class="data-pill pill-${node.cat}">${node.cat}</span>
-                    <span class="data-pill">TR: ${node.dr}</span>
-                    ${node.loc ? '<span class="data-pill pill-map" data-loc="' + node.loc.replace(/"/g, '&quot;') + '">📍 Map</span>' : ''}
-                    ${typeof node.cost === 'number' && node.cost > 0 ? '<span class="data-pill val-green">$$</span>' : ''}
-                    <span class="data-pill pill-timer ${state.running ? 'pill-timer-active' : ''}" data-task-id="${taskId}">
-                        <i data-lucide="${state.running ? 'pause' : 'play'}" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>
+                    <div class="large-clock ${state.running ? 'is-running' : ''}" data-task-id="${taskId}">
+                        <div class="clock-icon"><i data-lucide="${state.running ? 'pause' : 'play'}"></i></div>
                         <span class="timer-display">${_formatElapsed(state.elapsed)}</span>
-                    </span>
+                    </div>
+                </div>
+                
+                <div class="node-content-right">
+                    <h3>${node.t}</h3>
+                    <p>${node.d}</p>
+                    <div class="pill-cluster">
+                        <span class="data-pill pill-${node.cat}">${node.cat}</span>
+                        <span class="data-pill">TR: ${node.dr}</span>
+                        ${node.loc ? '<span class="data-pill pill-map" data-loc="' + node.loc.replace(/"/g, '&quot;') + '">📍 Map</span>' : ''}
+                        ${typeof node.cost === 'number' && node.cost > 0 ? '<span class="data-pill val-green">$$</span>' : ''}
+                    </div>
                 </div>
             </div>
         </article>
@@ -414,17 +417,19 @@ export function _mountSurface(state, itinerary, insights) {
 export function _bindModalEvents() {
     _bindProfileEvents();
     $('#timeline-root').addEventListener('click', (e) => {
+        if (e.target.closest('.pill-check') || e.target.closest('.large-clock')) return;
+
         const checkBtn = e.target.closest('.pill-check');
         if (checkBtn) {
-            const taskId = checkBtn.closest('.track-node').dataset.taskId;
+            const taskId = checkBtn.dataset.taskId;
             window._toggleTaskDone(taskId, checkBtn);
             return;
         }
 
-        const timerBtn = e.target.closest('.pill-timer');
-        if (timerBtn) {
-            const taskId = timerBtn.dataset.taskId;
-            window._toggleTaskTimer(taskId, timerBtn);
+        const clockBtn = e.target.closest('.large-clock');
+        if (clockBtn) {
+            const taskId = clockBtn.dataset.taskId;
+            window._toggleTaskTimer(taskId, clockBtn);
             return;
         }
 
@@ -797,10 +802,11 @@ window._toggleTaskTimer = (taskId, btnEl) => {
     Object.keys(states).forEach(id => {
         if (states[id].running && id !== taskId) {
             states[id].running = false;
-            const otherBtn = document.querySelector(`.pill-timer[data-task-id="${id}"]`);
+            const otherBtn = document.querySelector(`.large-clock[data-task-id="${id}"]`);
             if (otherBtn) {
-                otherBtn.classList.remove('pill-timer-active');
-                otherBtn.innerHTML = `<i data-lucide="play" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px;"></i><span class="timer-display">${_formatElapsed(states[id].elapsed)}</span>`;
+                otherBtn.classList.remove('is-running');
+                otherBtn.querySelector('.clock-icon').innerHTML = `<i data-lucide="play"></i>`;
+                otherBtn.querySelector('.timer-display').textContent = _formatElapsed(states[id].elapsed);
                 if (window.lucide) window.lucide.createIcons({ root: otherBtn });
             }
         }
@@ -816,8 +822,9 @@ window._toggleTaskTimer = (taskId, btnEl) => {
     }
 
     if (btnEl) {
-        btnEl.classList.toggle('pill-timer-active', states[taskId].running);
-        btnEl.innerHTML = `<i data-lucide="${states[taskId].running ? 'pause' : 'play'}" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px;"></i><span class="timer-display">${_formatElapsed(states[taskId].elapsed)}</span>`;
+        btnEl.classList.toggle('is-running', states[taskId].running);
+        btnEl.querySelector('.clock-icon').innerHTML = `<i data-lucide="${states[taskId].running ? 'pause' : 'play'}"></i>`;
+        btnEl.querySelector('.timer-display').textContent = _formatElapsed(states[taskId].elapsed);
         if (window.lucide) window.lucide.createIcons({ root: btnEl });
     }
 };
