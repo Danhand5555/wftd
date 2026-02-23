@@ -79,10 +79,9 @@
 
 .auth-box {
     width: 100%;
-    max-width: 580px;
-    /* Cinematic wide presence */
-    padding: 40px;
-    /* Expansive breathing room */
+    max-width: 520px;
+    /* Professional wide presence */
+    padding: 32px;
 }
 
 /* Wizard Animations */
@@ -423,8 +422,8 @@
 
 .tab-content {
     display: none;
-    height: 172px;
-    /* Scaled: 84 (input) + 16 (gap) + 72 (button) */
+    height: 128px;
+    /* Balanced: 60 (input) + 14 (gap) + 54 (button) */
     overflow: hidden;
 }
 
@@ -442,16 +441,16 @@
 /* PIN */
 .pin-entry {
     width: 100%;
-    height: 84px;
-    /* Dramatic height boost */
-    padding: 12px 32px;
+    height: 60px;
+    /* Professional height */
+    padding: 12px 24px;
     border: 1px solid var(--clr-chrome);
     border-radius: var(--radii-hard);
-    font-size: 36px;
+    font-size: 24px;
     text-align: center;
-    letter-spacing: 16px;
+    letter-spacing: 10px;
     /* High-end character spacing */
-    font-weight: 900;
+    font-weight: 700;
     color: var(--clr-ink);
     background: var(--clr-paper);
     outline: none;
@@ -460,11 +459,11 @@
 }
 
 .pin-entry[type="email"] {
-    font-size: 22px;
+    font-size: 16px;
     letter-spacing: normal;
     text-align: left;
-    padding: 0 32px;
-    font-weight: 600;
+    padding: 0 20px;
+    font-weight: 500;
 }
 
 .pin-entry:focus {
@@ -484,23 +483,22 @@
 /* Buttons */
 .btn-auth-primary {
     width: 100%;
-    height: 72px;
-    /* Cinematic primary action height */
+    height: 54px;
+    /* Professional primary action height */
     display: flex;
     align-items: center;
     justify-content: center;
     background: var(--clr-brand);
     color: var(--clr-ink);
-    font-size: var(--tx-xl);
-    font-weight: 950;
+    font-size: var(--tx-base);
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    border: 4px solid var(--clr-ink);
-    /* Stronger border for scale */
+    letter-spacing: 0.05em;
+    border: 3px solid var(--clr-ink);
     border-radius: var(--radii-soft);
     cursor: pointer;
     transition: all 0.2s var(--ease-snappy);
-    box-shadow: 4px 4px 0 0 var(--clr-ink);
+    box-shadow: 3px 3px 0 0 var(--clr-ink);
 }
 
 .btn-auth-primary:hover {
