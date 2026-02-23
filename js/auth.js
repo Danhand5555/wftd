@@ -18,7 +18,7 @@ export async function _initAuth() {
                     console.log('[Auth] Session established via PKCE');
                     // Clean the URL
                     window.history.replaceState({}, '', window.location.pathname);
-                    localStorage.setItem('wftd_alias', data.user.user_metadata?.full_name || data.user.email.split('@')[0]);
+                    localStorage.setItem('wftd_alias', data.user.user_metadata?.full_name || localStorage.getItem('wftd_alias') || data.user.email.split('@')[0]);
                     _unlockWorkspace(localStorage.getItem('wftd_alias'));
                     return;
                 }
@@ -33,7 +33,7 @@ export async function _initAuth() {
             const { data: { session } } = await supabase.auth.getSession();
             if (session?.user) {
                 window.history.replaceState({}, '', window.location.pathname);
-                localStorage.setItem('wftd_alias', session.user.user_metadata?.full_name || session.user.email.split('@')[0]);
+                localStorage.setItem('wftd_alias', session.user.user_metadata?.full_name || localStorage.getItem('wftd_alias') || session.user.email.split('@')[0]);
                 _unlockWorkspace(localStorage.getItem('wftd_alias'));
                 return;
             }
@@ -44,7 +44,7 @@ export async function _initAuth() {
             console.log('[Auth] State change:', event);
             if (event === 'SIGNED_IN' && session?.user) {
                 const user = session.user;
-                localStorage.setItem('wftd_alias', user.user_metadata?.full_name || user.email.split('@')[0]);
+                localStorage.setItem('wftd_alias', user.user_metadata?.full_name || localStorage.getItem('wftd_alias') || user.email.split('@')[0]);
                 _unlockWorkspace(localStorage.getItem('wftd_alias'));
             }
         });
@@ -53,7 +53,7 @@ export async function _initAuth() {
     // 1. Check for existing Supabase Session
     const user = await getUser();
     if (user) {
-        localStorage.setItem('wftd_alias', user.user_metadata.full_name || user.email.split('@')[0]);
+        localStorage.setItem('wftd_alias', user.user_metadata.full_name || localStorage.getItem('wftd_alias') || user.email.split('@')[0]);
         _unlockWorkspace(localStorage.getItem('wftd_alias'));
         return;
     }
@@ -89,8 +89,8 @@ export async function _initAuth() {
     $('#btn-auth-login')?.addEventListener('click', _handleLogin);
 
     // Magic Link Handlers
-    $('#btn-magic-signup')?.addEventListener('click', () => _handleMagicLink('#auth-email-input'));
-    $('#btn-magic-login')?.addEventListener('click', () => _handleMagicLink('#auth-email-login'));
+    $('#btn-magic-signup')?.addEventListener('click', () => _handleMagicLink('#auth-email-input', true));
+    $('#btn-magic-login')?.addEventListener('click', () => _handleMagicLink('#auth-email-login', false));
 
     $('#btn-auth-reset')?.addEventListener('click', async () => {
         await signOut();
@@ -111,10 +111,10 @@ export async function _initAuth() {
     });
 }
 
-export async function _handleMagicLink(selector) {
+export async function _handleMagicLink(selector, isSignup = false) {
     const emailEl = $(selector);
     const errorNode = $('#auth-error');
-    console.log('[MagicLink] Handler triggered, selector:', selector);
+    console.log('[MagicLink] Handler triggered, selector:', selector, 'isSignup:', isSignup);
 
     if (!emailEl) {
         console.error('[MagicLink] Email element not found:', selector);
@@ -132,6 +132,16 @@ export async function _handleMagicLink(selector) {
         return;
     }
 
+    // Grab the user's name from the signup form if available
+    let userName = null;
+    if (isSignup) {
+        const aliasEl = $('#auth-alias-input');
+        userName = aliasEl?.value.trim() || null;
+        if (userName) {
+            localStorage.setItem('wftd_alias', userName);
+        }
+    }
+
     // Check if Supabase is configured
     const { isSupabaseConfigured } = await import('./supabase.js');
     console.log('[MagicLink] Supabase configured:', isSupabaseConfigured());
@@ -145,7 +155,7 @@ export async function _handleMagicLink(selector) {
         errorNode.textContent = "Sending login link...";
         errorNode.style.cssText = 'opacity:1; transform:none; color:#555';
         console.log('[MagicLink] Calling signInWithMagicLink...');
-        const result = await signInWithMagicLink(email);
+        const result = await signInWithMagicLink(email, userName);
         console.log('[MagicLink] Result:', result);
         errorNode.textContent = "Check your email for the login link.";
         errorNode.style.cssText = 'opacity:1; transform:none; color:#007054';
