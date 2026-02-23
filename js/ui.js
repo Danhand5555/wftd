@@ -367,21 +367,41 @@ export function _mountSurface(state, itinerary, insights) {
     `).join('');
 
     const track = $('#timeline-root');
-    track.innerHTML = itinerary.map((node, i) => `
-        <article class="track-node" data-index="${i}" style="animation-delay: ${i * 0.12}s; cursor: pointer;" data-info="${JSON.stringify(node).replace(/"/g, '&quot;')}">
+    const taskStates = JSON.parse(localStorage.getItem('wftd_task_states') || '{}');
+
+    track.innerHTML = itinerary.map((node, i) => {
+        const taskId = `task-${i}`;
+        const state = taskStates[taskId] || { done: false, elapsed: 0, running: false };
+        const isPast = node.isPast; // we might need to recalculate this or use the existing logic
+
+        return `
+        <article class="track-node ${state.done ? 'status-done' : ''}" data-index="${i}" data-task-id="${taskId}" style="animation-delay: ${i * 0.12}s;" data-info="${JSON.stringify(node).replace(/"/g, '&quot;')}">
             <time class="node-meta">${_formatTo12h(node.time)}</time>
             <div class="node-surface">
+                <div class="task-tracker">
+                    <button type="button" class="btn-check ${state.done ? 'is-done' : ''}" onclick="window._toggleTaskDone('${taskId}')">
+                        <i data-lucide="${state.done ? 'check-circle-2' : 'circle'}"></i>
+                    </button>
+                    <div class="task-timer-block">
+                        <span class="timer-display">${_formatElapsed(state.elapsed)}</span>
+                        <div class="timer-controls">
+                            <button type="button" class="btn-timer-toggle" onclick="window._toggleTaskTimer('${taskId}')">
+                                <i data-lucide="${state.running ? 'pause' : 'play'}"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
                 <h3>${node.t}</h3>
                 <p>${node.d}</p>
                 <div class="pill-cluster">
                     <span class="data-pill pill-${node.cat}">${node.cat}</span>
                     <span class="data-pill">TR: ${node.dr}</span>
-                    ${node.loc ? '<span class="data-pill">📍 Map</span>' : ''}
+                    ${node.loc ? '<span class="data-pill" onclick="window._openMap(\'' + node.loc + '\')">📍 Map</span>' : ''}
                     ${typeof node.cost === 'number' && node.cost > 0 ? '<span class="data-pill val-green">$$</span>' : ''}
                 </div>
             </div>
         </article>
-    `).join('');
+    `}).join('');
 
     setTimeout(() => {
         const surface = $('#app-surface');
@@ -392,12 +412,16 @@ export function _mountSurface(state, itinerary, insights) {
         _getWeatherContext(lat, lon);
         _startLiveTracking();
         _showChat();
+        if (window.lucide) window.lucide.createIcons();
     }, 300);
 }
 
 export function _bindModalEvents() {
     _bindProfileEvents();
     $('#timeline-root').addEventListener('click', (e) => {
+        // Don't open modal if clicking on buttons/controls
+        if (e.target.closest('button') || e.target.closest('.task-tracker')) return;
+
         const nodeEl = e.target.closest('.track-node');
         if (!nodeEl) return;
         try {
@@ -698,16 +722,13 @@ export function _initLocPicker() {
         setTimeout(() => _locPickerMap && _locPickerMap.invalidateSize(), 200);
     });
 }
-
 export function _initFileHandling() {
     const input = $('#pdf-upload-input');
     const btn = $('#pdf-upload-btn');
     const status = $('#file-status');
-
     if (!input || !btn) return;
 
     btn.addEventListener('click', () => input.click());
-
     input.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -722,3 +743,95 @@ export function _initFileHandling() {
         }
     });
 }
+/**
+ * Helper: Format elapsed seconds into MM:SS or HH:MM:SS
+ */
+function _formatElapsed(seconds) {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return [
+        h > 0 ? h : null,
+        m.toString().padStart(2, '0'),
+        s.toString().padStart(2, '0')
+    ].filter(x => x !== null).join(':');
+}
+
+// Global functions for inline event handlers
+window._toggleTaskDone = (taskId) => {
+    const states = JSON.parse(localStorage.getItem('wftd_task_states') || '{}');
+    if (!states[taskId]) states[taskId] = { done: false, elapsed: 0, running: false };
+    states[taskId].done = !states[taskId].done;
+    localStorage.setItem('wftd_task_states', JSON.stringify(states));
+
+    // Refresh UI
+    const saved = JSON.parse(localStorage.getItem('wftd_today_schedule'));
+    if (saved) _mountSurface(saved.state, saved.itinerary, saved.insights);
+};
+
+let timerInterval;
+window._toggleTaskTimer = (taskId) => {
+    const states = JSON.parse(localStorage.getItem('wftd_task_states') || '{}');
+    if (!states[taskId]) states[taskId] = { done: false, elapsed: 0, running: false };
+
+    const wasRunning = states[taskId].running;
+
+    // Stop all other running timers first (optional - focus mode)
+    Object.keys(states).forEach(id => {
+        states[id].running = false;
+    });
+
+    states[taskId].running = !wasRunning;
+    localStorage.setItem('wftd_task_states', JSON.stringify(states));
+
+    if (states[taskId].running) {
+        _startGlobalTimer();
+    } else {
+        _stopGlobalTimerIfNoneRunning();
+    }
+
+    // Refresh UI
+    const saved = JSON.parse(localStorage.getItem('wftd_today_schedule'));
+    if (saved) _mountSurface(saved.state, saved.itinerary, saved.insights);
+};
+
+function _startGlobalTimer() {
+    if (timerInterval) return;
+    timerInterval = setInterval(() => {
+        const states = JSON.parse(localStorage.getItem('wftd_task_states') || '{}');
+        let anyRunning = false;
+        Object.keys(states).forEach(id => {
+            if (states[id].running) {
+                states[id].elapsed += 1;
+                anyRunning = true;
+                // Update display directly if possible to avoid full remount
+                const node = document.querySelector(`[data-task-id="${id}"] .timer-display`);
+                if (node) node.textContent = _formatElapsed(states[id].elapsed);
+            }
+        });
+        localStorage.setItem('wftd_task_states', JSON.stringify(states));
+        if (!anyRunning) _stopGlobalTimerIfNoneRunning();
+    }, 1000);
+}
+
+function _stopGlobalTimerIfNoneRunning() {
+    const states = JSON.parse(localStorage.getItem('wftd_task_states') || '{}');
+    const anyRunning = Object.values(states).some(s => s.running);
+    if (!anyRunning && timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+}
+
+window._openMap = (location) => {
+    const query = encodeURIComponent(location + ", Bangkok");
+    window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
+};
+
+// Resume any running timers on load
+window.addEventListener('DOMContentLoaded', () => {
+    const states = JSON.parse(localStorage.getItem('wftd_task_states') || '{}');
+    if (Object.values(states).some(s => s.running)) {
+        _startGlobalTimer();
+    }
+});

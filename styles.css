@@ -2037,3 +2037,108 @@ input {
 .auth-separator span {
     margin: 0 10px;
 }
+
+/* Task Tracker UI */
+.task-tracker {
+    position: absolute;
+    top: var(--space-16);
+    right: var(--space-16);
+    display: flex;
+    align-items: center;
+    gap: var(--space-16);
+    pointer-events: auto;
+}
+
+.btn-check {
+    background: transparent;
+    border: none;
+    color: var(--clr-chrome);
+    cursor: pointer;
+    transition: all 0.2s var(--ease-snappy);
+    display: flex;
+    align-items: center;
+    padding: 0;
+}
+
+.btn-check:hover {
+    color: var(--clr-brand);
+    transform: scale(1.1);
+}
+
+.btn-check.is-done {
+    color: #4CAF50;
+    /* Solid green for completion */
+}
+
+.task-timer-block {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.03);
+    padding: 4px 8px;
+    border-radius: var(--radii-soft);
+    gap: 8px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+}
+
+.track-node.status-active .task-timer-block {
+    background: rgba(255, 255, 255, 0.5);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+.timer-display {
+    font-family: 'JetBrains Mono', monospace;
+    /* Sharp mono font if available, fallback below */
+    font-family: monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--clr-ink);
+    min-width: 45px;
+    text-align: right;
+}
+
+.timer-controls {
+    display: flex;
+    align-items: center;
+}
+
+.btn-timer-toggle {
+    background: var(--clr-ink);
+    color: var(--clr-paper);
+    border: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-timer-toggle:hover {
+    transform: scale(1.05);
+    background: #333;
+}
+
+.btn-timer-toggle i {
+    width: 10px;
+    height: 10px;
+}
+
+/* Task Done Styling Override */
+.track-node.status-done .node-surface {
+    background: #fdfdfd;
+    border-color: #ddd;
+    opacity: 0.7;
+}
+
+.track-node.status-done h3 {
+    text-decoration: line-through;
+    color: #888;
+}
+
+.btn-check i {
+    width: 20px;
+    height: 20px;
+}
