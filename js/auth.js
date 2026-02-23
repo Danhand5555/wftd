@@ -1,6 +1,6 @@
 import { $, $$ } from './utils.js';
 import { _mountSurface, _renderAllStepSuggestions } from './ui.js';
-import { signInWithGoogle, getUser, signOut, signInWithMagicLink, supabase } from './supabase.js';
+import { signInWithGoogle, getUser, signOut, signInWithMagicLink, updateUserName, supabase } from './supabase.js';
 
 export async function _initAuth() {
     // Handle magic link callback (PKCE flow)
@@ -18,8 +18,12 @@ export async function _initAuth() {
                     console.log('[Auth] Session established via PKCE');
                     // Clean the URL
                     window.history.replaceState({}, '', window.location.pathname);
-                    localStorage.setItem('wftd_alias', data.user.user_metadata?.full_name || localStorage.getItem('wftd_alias') || data.user.email.split('@')[0]);
-                    _unlockWorkspace(localStorage.getItem('wftd_alias'));
+                    const resolvedName = data.user.user_metadata?.full_name || localStorage.getItem('wftd_alias') || data.user.email.split('@')[0];
+                    localStorage.setItem('wftd_alias', resolvedName);
+                    if (!data.user.user_metadata?.full_name && resolvedName) {
+                        updateUserName(resolvedName);
+                    }
+                    _unlockWorkspace(resolvedName);
                     return;
                 }
             } catch (e) {
@@ -33,8 +37,12 @@ export async function _initAuth() {
             const { data: { session } } = await supabase.auth.getSession();
             if (session?.user) {
                 window.history.replaceState({}, '', window.location.pathname);
-                localStorage.setItem('wftd_alias', session.user.user_metadata?.full_name || localStorage.getItem('wftd_alias') || session.user.email.split('@')[0]);
-                _unlockWorkspace(localStorage.getItem('wftd_alias'));
+                const resolvedName = session.user.user_metadata?.full_name || localStorage.getItem('wftd_alias') || session.user.email.split('@')[0];
+                localStorage.setItem('wftd_alias', resolvedName);
+                if (!session.user.user_metadata?.full_name && resolvedName) {
+                    updateUserName(resolvedName);
+                }
+                _unlockWorkspace(resolvedName);
                 return;
             }
         }
@@ -44,8 +52,12 @@ export async function _initAuth() {
             console.log('[Auth] State change:', event);
             if (event === 'SIGNED_IN' && session?.user) {
                 const user = session.user;
-                localStorage.setItem('wftd_alias', user.user_metadata?.full_name || localStorage.getItem('wftd_alias') || user.email.split('@')[0]);
-                _unlockWorkspace(localStorage.getItem('wftd_alias'));
+                const resolvedName = user.user_metadata?.full_name || localStorage.getItem('wftd_alias') || user.email.split('@')[0];
+                localStorage.setItem('wftd_alias', resolvedName);
+                if (!user.user_metadata?.full_name && resolvedName) {
+                    updateUserName(resolvedName);
+                }
+                _unlockWorkspace(resolvedName);
             }
         });
     }
@@ -53,8 +65,12 @@ export async function _initAuth() {
     // 1. Check for existing Supabase Session
     const user = await getUser();
     if (user) {
-        localStorage.setItem('wftd_alias', user.user_metadata.full_name || localStorage.getItem('wftd_alias') || user.email.split('@')[0]);
-        _unlockWorkspace(localStorage.getItem('wftd_alias'));
+        const resolvedName = user.user_metadata.full_name || localStorage.getItem('wftd_alias') || user.email.split('@')[0];
+        localStorage.setItem('wftd_alias', resolvedName);
+        if (!user.user_metadata.full_name && resolvedName) {
+            updateUserName(resolvedName);
+        }
+        _unlockWorkspace(resolvedName);
         return;
     }
 

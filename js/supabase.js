@@ -89,6 +89,18 @@ export async function getUser() {
 }
 
 /**
+ * Auth: Update user's display name in Supabase metadata
+ */
+export async function updateUserName(name) {
+    if (!supabase || !name) return;
+    const { error } = await supabase.auth.updateUser({
+        data: { full_name: name }
+    });
+    if (error) console.error('[Supabase] Failed to update user name:', error);
+    else console.log('[Supabase] User name updated to:', name);
+}
+
+/**
  * Auth: Sign Out
  */
 export async function signOut() {
