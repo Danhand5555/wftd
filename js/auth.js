@@ -1,5 +1,5 @@
 import { $, $$ } from './utils.js';
-import { _mountSurface, _renderAllStepSuggestions } from './ui.js';
+import { _mountSurface, _renderAllStepSuggestions, _applyTheme } from './ui.js';
 import { signInWithGoogle, getUser, signOut, signInWithMagicLink, updateUserName, supabase } from './supabase.js';
 
 export async function _initAuth() {
@@ -77,16 +77,58 @@ export async function _initAuth() {
     const alias = localStorage.getItem('wftd_alias');
     const pin = localStorage.getItem('wftd_pin');
 
+    // Initial State: Show Choice Layer unless we have a return user or active session
+    const showChoice = () => {
+        $('#auth-choice-layer').classList.remove('hide');
+        $('#auth-signup-layer').classList.add('hide');
+        $('#auth-login-layer').classList.add('hide');
+        if (window.lucide) window.lucide.createIcons();
+    };
+
     if (alias && pin) {
-        // Returning User
+        // Returning User - go direct to login
+        $('#auth-choice-layer').classList.add('hide');
         $('#auth-signup-layer').classList.add('hide');
         $('#auth-login-layer').classList.remove('hide');
         $('#auth-welcome-back').textContent = 'Welcome back, ' + alias;
     } else {
-        // New User
-        $('#auth-signup-layer').classList.remove('hide');
-        $('#auth-login-layer').classList.add('hide');
+        showChoice();
     }
+
+    // Choice Listeners
+    $('#btn-choice-new')?.addEventListener('click', () => {
+        $('#auth-choice-layer').classList.add('hide');
+        $('#auth-signup-layer').classList.remove('hide');
+        if (window.lucide) window.lucide.createIcons();
+    });
+
+    $('#btn-choice-login')?.addEventListener('click', () => {
+        $('#auth-choice-layer').classList.add('hide');
+        $('#auth-login-layer').classList.remove('hide');
+        if (window.lucide) window.lucide.createIcons();
+    });
+
+    $('#btn-choice-guest')?.addEventListener('click', () => {
+        _unlockWorkspace('Guest');
+    });
+
+
+    // Apply saved theme color if exists
+    const savedTheme = localStorage.getItem('wftd_theme') || '#9fe870';
+    _applyTheme(savedTheme);
+
+    // Set active theme chip in UI
+    $$('.theme-chip').forEach(chip => {
+        if (chip.dataset.color === savedTheme) chip.classList.add('active');
+        else chip.classList.remove('active');
+
+        chip.addEventListener('click', () => {
+            $$('.theme-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            const color = chip.dataset.color;
+            _applyTheme(color);
+        });
+    });
 
     // Tab Switching Logic — scoped to parent container
     $$('.switch-btn').forEach(btn => {
@@ -125,6 +167,12 @@ export async function _initAuth() {
         $('#auth-signup-layer').classList.remove('hide');
         $('#auth-error').textContent = '';
     });
+
+    // Back to Gate Listeners (Add IDs to HTML or use existing structure)
+    $$('.auth-brand').forEach(brand => {
+        brand.style.cursor = 'pointer';
+        brand.addEventListener('click', showChoice);
+    });
 }
 
 export async function _handleMagicLink(selector, isSignup = false) {
@@ -150,12 +198,15 @@ export async function _handleMagicLink(selector, isSignup = false) {
 
     // Grab the user's name from the signup form if available
     let userName = null;
+    let themeColor = null;
     if (isSignup) {
         const aliasEl = $('#auth-alias-input');
         userName = aliasEl?.value.trim() || null;
         if (userName) {
             localStorage.setItem('wftd_alias', userName);
         }
+        themeColor = $('.theme-chip.active')?.dataset.color || '#9fe870';
+        localStorage.setItem('wftd_theme', themeColor);
     }
 
     // Check if Supabase is configured
@@ -171,7 +222,7 @@ export async function _handleMagicLink(selector, isSignup = false) {
         errorNode.textContent = "Sending login link...";
         errorNode.style.cssText = 'opacity:1; transform:none; color:#555';
         console.log('[MagicLink] Calling signInWithMagicLink...');
-        const result = await signInWithMagicLink(email, userName);
+        const result = await signInWithMagicLink(email, userName, themeColor);
         console.log('[MagicLink] Result:', result);
         errorNode.textContent = "Check your email for the login link.";
         errorNode.style.cssText = 'opacity:1; transform:none; color:#007054';
@@ -198,11 +249,13 @@ export function _handleSignup() {
 
     const food = $('#auth-food-input').value.trim();
     const job = $('#auth-job-input').value.trim();
+    const themeColor = $('.theme-chip.active')?.dataset.color || '#9fe870';
 
     localStorage.setItem('wftd_alias', alias);
     localStorage.setItem('wftd_pin', pin);
     if (food) localStorage.setItem('wftd_food', food);
     if (job) localStorage.setItem('wftd_job', job);
+    localStorage.setItem('wftd_theme', themeColor);
 
     _unlockWorkspace(alias);
 }
@@ -228,6 +281,11 @@ export async function _unlockWorkspace(alias) {
 
     // If the user is authenticated via Supabase but has no full_name, prompt for it
     const user = await getUser();
+
+    // Theme application
+    const themeColor = user?.user_metadata?.theme_color || localStorage.getItem('wftd_theme');
+    if (themeColor) _applyTheme(themeColor);
+
     if (user && !user.user_metadata?.full_name) {
         const promptedName = prompt('Welcome! What should we call you?', alias || '');
         if (promptedName && promptedName.trim()) {

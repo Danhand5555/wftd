@@ -10,6 +10,7 @@ import { CORE_REGIMEN } from './js/config.js';
 import { _nextStep, _prevStep, _handleGoalFeedback, _handleEntitiesFeedback, _handleAgendaFeedback, _handleBudgetFeedback, _handleEodFeedback, _bindModalEvents, _initLocPicker, _initFileHandling } from './js/ui.js';
 import { _handleExportCalendar } from './js/calendar.js';
 
+
 document.addEventListener('DOMContentLoaded', _initEngine);
 
 async function _initEngine() {

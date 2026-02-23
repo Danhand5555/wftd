@@ -63,13 +63,15 @@ export async function signInWithGoogle() {
 /**
  * Auth: Sign in with Magic Link (Email)
  */
-export async function signInWithMagicLink(email, name = null) {
+export async function signInWithMagicLink(email, name = null, themeColor = null) {
     if (!supabase) throw new Error('Supabase client not initialized.');
     const options = {
         emailRedirectTo: window.location.origin,
     };
-    if (name) {
-        options.data = { full_name: name };
+    if (name || themeColor) {
+        options.data = {};
+        if (name) options.data.full_name = name;
+        if (themeColor) options.data.theme_color = themeColor;
     }
     const { data, error } = await supabase.auth.signInWithOtp({
         email,
@@ -98,6 +100,18 @@ export async function updateUserName(name) {
     });
     if (error) console.error('[Supabase] Failed to update user name:', error);
     else console.log('[Supabase] User name updated to:', name);
+}
+
+/**
+ * Auth: Update user's metadata in Supabase
+ */
+export async function updateUserProfile(metadata) {
+    if (!supabase || !metadata) return;
+    const { error } = await supabase.auth.updateUser({
+        data: metadata
+    });
+    if (error) console.error('[Supabase] Failed to update profile:', error);
+    else console.log('[Supabase] Profile updated:', metadata);
 }
 
 /**

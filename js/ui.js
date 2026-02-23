@@ -2,6 +2,17 @@ import { $, $$ } from './utils.js';
 import { _formatTo12h } from './utils.js';
 import { _getWeatherContext, _startLiveTracking, _renderTransportOptions } from './engine.js';
 import { _showChat } from './chat.js';
+import { updateUserProfile } from './supabase.js';
+
+/**
+ * Applies the selected theme color to the application.
+ */
+export function _applyTheme(color) {
+    if (!color) return;
+    document.documentElement.style.setProperty('--clr-brand', color);
+    localStorage.setItem('wftd_theme', color);
+    console.log('[UI] Applied theme color:', color);
+}
 
 // State
 let currentStep = 1;
@@ -445,10 +456,26 @@ export function _bindProfileEvents() {
             $('#profile-food').value = localStorage.getItem('wftd_food') || '';
             $('#profile-memory').value = localStorage.getItem('wftd_memory') || '';
 
+            // Set active theme chip
+            const currentTheme = localStorage.getItem('wftd_theme') || '#9fe870';
+            $$('#profile-theme-picker .theme-chip').forEach(chip => {
+                if (chip.dataset.color === currentTheme) chip.classList.add('active');
+                else chip.classList.remove('active');
+            });
+
             modal.classList.remove('hide');
             modal.setAttribute('aria-hidden', 'false');
         });
     }
+
+    // Profile theme chip clicks
+    $$('#profile-theme-picker .theme-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            $$('#profile-theme-picker .theme-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            _applyTheme(chip.dataset.color);
+        });
+    });
 
     const closeModal = () => {
         modal.classList.add('hide');
@@ -465,6 +492,19 @@ export function _bindProfileEvents() {
             localStorage.setItem('wftd_job', $('#profile-job').value.trim());
             localStorage.setItem('wftd_food', $('#profile-food').value.trim());
             localStorage.setItem('wftd_memory', $('#profile-memory').value.trim());
+
+            const newTheme = $('#profile-theme-picker .theme-chip.active')?.dataset.color;
+            if (newTheme) {
+                localStorage.setItem('wftd_theme', newTheme);
+            }
+
+            // Sync to Supabase if logged in
+            updateUserProfile({
+                full_name: newAlias,
+                role: $('#profile-job').value.trim(),
+                diet: $('#profile-food').value.trim(),
+                theme_color: newTheme
+            });
 
             saveBtn.textContent = 'Saved!';
             setTimeout(() => {

@@ -58,7 +58,38 @@
         <!-- Auth Screen -->
         <section id="auth-view" class="auth-overlay">
             <div class="auth-box">
-                <div id="auth-signup-layer">
+                <!-- Choice Layer (New Gate) -->
+                <div id="auth-choice-layer" class="">
+                    <div class="auth-brand">WFTD <span>Engine</span></div>
+                    <h1 class="auth-heading">Welcome to your daily engine</h1>
+                    <p class="auth-desc">How would you like to access your workspace today?</p>
+
+                    <div class="auth-choice-grid">
+                        <button type="button" class="choice-card" id="btn-choice-new">
+                            <i data-lucide="sparkles" class="choice-icon-svg"></i>
+                            <div class="choice-text">
+                                <span class="choice-title">New Workspace</span>
+                                <span class="choice-sub">Build your profile from scratch</span>
+                            </div>
+                        </button>
+                        <button type="button" class="choice-card" id="btn-choice-login">
+                            <i data-lucide="key-round" class="choice-icon-svg"></i>
+                            <div class="choice-text">
+                                <span class="choice-title">Sign In</span>
+                                <span class="choice-sub">Resume with PIN or Email</span>
+                            </div>
+                        </button>
+                        <button type="button" class="choice-card variant-ghost" id="btn-choice-guest">
+                            <i data-lucide="user" class="choice-icon-svg"></i>
+                            <div class="choice-text">
+                                <span class="choice-title">Guest Session</span>
+                                <span class="choice-sub">One-time schedule, no sync</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="auth-signup-layer" class="hide">
                     <div class="auth-brand">WFTD <span>Engine</span></div>
                     <h1 class="auth-heading">Create your workspace</h1>
                     <p class="auth-desc">Fill in your details to personalize your daily schedule.</p>
@@ -77,6 +108,31 @@
                             <div class="auth-field">
                                 <label for="auth-food-input">Diet</label>
                                 <input type="text" id="auth-food-input" placeholder="e.g. Vegan" autocomplete="off">
+                            </div>
+                        </div>
+                        <div class="auth-field" style="margin-top: 8px;">
+                            <label style="margin-bottom: 12px; display: block;">Workspace Aesthetic</label>
+                            <div class="theme-grid" id="auth-theme-picker">
+                                <button type="button" class="theme-chip active" data-color="#C5E1A5">
+                                    <span class="chip-color" style="background:#C5E1A5;"></span>
+                                    <span class="chip-label">Matcha</span>
+                                </button>
+                                <button type="button" class="theme-chip" data-color="#90CAF9">
+                                    <span class="chip-color" style="background:#90CAF9;"></span>
+                                    <span class="chip-label">Cloud</span>
+                                </button>
+                                <button type="button" class="theme-chip" data-color="#F48FB1">
+                                    <span class="chip-color" style="background:#F48FB1;"></span>
+                                    <span class="chip-label">Blush</span>
+                                </button>
+                                <button type="button" class="theme-chip" data-color="#FFCC80">
+                                    <span class="chip-color" style="background:#FFCC80;"></span>
+                                    <span class="chip-label">Sunset</span>
+                                </button>
+                                <button type="button" class="theme-chip" data-color="#CE93D8">
+                                    <span class="chip-color" style="background:#CE93D8;"></span>
+                                    <span class="chip-label">Orchid</span>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -609,6 +665,34 @@
                                 style="color:var(--clr-brand); font-size:11px; text-transform:uppercase; font-weight:var(--wght-bold); display:block; margin-bottom:4px;">Diet</label>
                             <input type="text" id="profile-food" class="input-majestic"
                                 style="font-size:16px; padding: 10px; border:2px solid var(--clr-ink); border-radius:var(--radii-hard); width:100%;">
+                        </div>
+                    </div>
+
+                    <div class="auth-field" style="margin-bottom: 24px;">
+                        <label
+                            style="color:var(--clr-brand); font-size:11px; text-transform:uppercase; font-weight:var(--wght-bold); display:block; margin-bottom:12px;">Workspace
+                            Aesthetic</label>
+                        <div class="theme-grid" id="profile-theme-picker">
+                            <button type="button" class="theme-chip" data-color="#C5E1A5">
+                                <span class="chip-color" style="background:#C5E1A5;"></span>
+                                <span class="chip-label">Matcha</span>
+                            </button>
+                            <button type="button" class="theme-chip" data-color="#90CAF9">
+                                <span class="chip-color" style="background:#90CAF9;"></span>
+                                <span class="chip-label">Cloud</span>
+                            </button>
+                            <button type="button" class="theme-chip" data-color="#F48FB1">
+                                <span class="chip-color" style="background:#F48FB1;"></span>
+                                <span class="chip-label">Blush</span>
+                            </button>
+                            <button type="button" class="theme-chip" data-color="#FFCC80">
+                                <span class="chip-color" style="background:#FFCC80;"></span>
+                                <span class="chip-label">Sunset</span>
+                            </button>
+                            <button type="button" class="theme-chip" data-color="#CE93D8">
+                                <span class="chip-color" style="background:#CE93D8;"></span>
+                                <span class="chip-label">Orchid</span>
+                            </button>
                         </div>
                     </div>
 
