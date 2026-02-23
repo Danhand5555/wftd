@@ -61,6 +61,7 @@ export class TimelineUI {
                 <div class="node-surface">
                     <div class="node-title-row">
                         <div class="title-left-group">
+                            <span class="node-meta">${node.time || ''}</span>
                             <h3>${node.t}</h3>
                             <p>${node.d}</p>
                         </div>
