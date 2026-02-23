@@ -24,48 +24,47 @@
     <!-- Main Container -->
     <main class="app-container">
 
-        <!-- Auth Screen (Cinematic Refactor) -->
+        <!-- Auth Screen (Identity Alignment) -->
         <section id="auth-view" class="auth-overlay">
             <div class="auth-box">
                 <div id="auth-signup-layer">
-                    <span class="step-counter">Initialize Workspace</span>
+                    <span class="step-counter">Identity Engine / Setup</span>
 
                     <!-- Section 1: The Profile -->
                     <div class="input-block">
                         <label class="majestic-label">Tell me who you are.</label>
-                        <input type="text" id="auth-alias-input" class="input-majestic" placeholder="Enter your alias"
+                        <input type="text" id="auth-alias-input" class="input-majestic" placeholder="Your Name"
                             autocomplete="off">
                     </div>
 
                     <div class="input-grid-majestic"
-                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px;">
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 80px; margin-top: 64px;">
                         <div class="input-block">
-                            <span class="section-kicker">Professional Role</span>
+                            <span class="auth-section-title">Professional Role</span>
                             <input type="text" id="auth-job-input" class="input-majestic-sm"
                                 placeholder="e.g. Designer, CEO" autocomplete="off">
                         </div>
                         <div class="input-block">
-                            <span class="section-kicker">Dietary Preference</span>
+                            <span class="auth-section-title">Dietary Preference</span>
                             <input type="text" id="auth-food-input" class="input-majestic-sm" placeholder="e.g. Vegan"
                                 autocomplete="off">
                         </div>
                     </div>
 
                     <!-- Section 2: Security Method -->
-                    <div style="margin-top: 64px;">
-                        <span class="section-kicker" style="display: block; margin-bottom: 16px;">Step 2: Choose
-                            Security & Sync</span>
+                    <div style="margin-top: 100px;">
+                        <span class="auth-section-title">Securing Your Workspace / Sync</span>
 
                         <div class="auth-tabs">
-                            <button type="button" class="tab-btn active" data-target="mode-pin">Local PIN</button>
-                            <button type="button" class="tab-btn" data-target="mode-email">Cloud Email Sync</button>
+                            <button type="button" class="tab-btn active" data-target="mode-pin">Local Access</button>
+                            <button type="button" class="tab-btn" data-target="mode-email">Cloud Sync</button>
                         </div>
 
                         <div id="mode-pin" class="tab-content active">
                             <input type="password" id="auth-pin-setup" class="pin-entry" maxlength="4"
                                 placeholder="••••" inputmode="numeric">
-                            <div class="immersive-dock">
-                                <button type="button" class="btn-solid-lg" id="btn-auth-signup">Create Local Workspace
+                            <div class="immersive-dock" style="justify-content: flex-start;">
+                                <button type="button" class="btn-solid-lg" id="btn-auth-signup">Create Workspace Locally
                                     →</button>
                             </div>
                         </div>
@@ -73,8 +72,8 @@
                         <div id="mode-email" class="tab-content">
                             <input type="email" id="auth-email-input" class="input-majestic"
                                 placeholder="your@email.com">
-                            <div class="immersive-dock">
-                                <button type="button" class="btn-solid-lg" id="btn-magic-signup">Send Magic Link
+                            <div class="immersive-dock" style="justify-content: flex-start;">
+                                <button type="button" class="btn-solid-lg" id="btn-magic-signup">Send Magic Sync Link
                                     ✨</button>
                             </div>
                         </div>
@@ -83,28 +82,29 @@
 
                 <div id="auth-login-layer" class="hide">
                     <span class="step-counter" id="auth-welcome-back">Workspace Locked</span>
-                    <label class="majestic-label">Welcome home.</label>
-                    <p class="auth-sub">Enter your PIN or use your email to resume your day.</p>
+                    <label class="majestic-label">Welcome back.</label>
+                    <p class="auth-sub">Identity required to resume engine.</p>
 
                     <div id="login-mode-pin">
                         <input type="password" id="auth-pin-login" class="pin-entry" maxlength="4" placeholder="••••"
                             inputmode="numeric">
-                        <div class="immersive-dock">
+                        <div class="immersive-dock" style="justify-content: flex-start;">
                             <button type="button" class="btn-solid-lg" id="btn-auth-login">Unlock Workspace →</button>
                         </div>
                     </div>
 
-                    <div class="auth-separator" style="margin: 40px 0;"><span>OR CLOUD SYNC</span></div>
+                    <div class="auth-separator" style="margin: 64px 0 24px;"><span>OR REMOTE AUTHENTICATION</span></div>
 
-                    <input type="email" id="auth-email-login" class="input-majestic-sm"
-                        placeholder="Enter email address">
-                    <button type="button" class="btn-ghost" id="btn-magic-login"
-                        style="margin-top: 16px; font-weight: bold; color: var(--clr-brand);">✨ Instant Email
-                        Login</button>
+                    <div style="display: flex; align-items: center; gap: 24px;">
+                        <input type="email" id="auth-email-login" class="input-majestic-sm"
+                            placeholder="email@address.com" style="flex: 1;">
+                        <button type="button" class="btn-ghost" id="btn-magic-login"
+                            style="font-weight: bold; color: var(--clr-brand); padding: 0;">✨ Instant Login</button>
+                    </div>
 
-                    <div style="margin-top: 80px;">
-                        <button type="button" class="btn-ghost reset-btn" id="btn-auth-reset">Switch Account / Reset
-                            System</button>
+                    <div style="margin-top: 80px; border-top: 1px solid var(--clr-chrome); padding-top: 24px;">
+                        <button type="button" class="btn-ghost reset-btn" id="btn-auth-reset" style="padding: 0;">System
+                            Reset / Switch Account</button>
                     </div>
                 </div>
 
