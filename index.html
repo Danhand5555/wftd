@@ -30,47 +30,46 @@
                 <div id="auth-signup-layer">
                     <header class="auth-header">
                         <span class="auth-kicker">Welcome to WFTD</span>
-                        <h1 class="auth-title">The start of something organized.</h1>
+                        <h1 class="auth-title">Set up your daily engine.</h1>
                     </header>
 
                     <div class="profile-stack">
                         <div class="auth-input-group">
-                            <label>Identity</label>
+                            <label>Name</label>
                             <input type="text" id="auth-alias-input" class="niche-input"
                                 placeholder="What should we call you?" autocomplete="off">
                         </div>
 
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                             <div class="auth-input-group">
-                                <label>Vocation</label>
-                                <input type="text" id="auth-job-input" class="niche-input" placeholder="Your role"
+                                <label>Role</label>
+                                <input type="text" id="auth-job-input" class="niche-input" placeholder="e.g. Designer"
                                     autocomplete="off">
                             </div>
                             <div class="auth-input-group">
-                                <label>Flavor</label>
-                                <input type="text" id="auth-food-input" class="niche-input" placeholder="Dietary vibe"
+                                <label>Diet</label>
+                                <input type="text" id="auth-food-input" class="niche-input" placeholder="e.g. Vegan"
                                     autocomplete="off">
                             </div>
                         </div>
                     </div>
 
                     <div class="auth-switch">
-                        <button type="button" class="switch-btn active" data-target="mode-pin">Private PIN</button>
-                        <button type="button" class="switch-btn" data-target="mode-email">Cloud Access</button>
+                        <button type="button" class="switch-btn active" data-target="mode-pin">PIN Lock</button>
+                        <button type="button" class="switch-btn" data-target="mode-email">Email Sync</button>
                     </div>
 
                     <div id="mode-pin" class="tab-content active">
                         <div class="pin-niche-container">
                             <input type="password" id="auth-pin-setup" class="pin-entry" maxlength="4"
                                 placeholder="••••" inputmode="numeric">
-                            <button type="button" class="btn-niche-main" id="btn-auth-signup">Begin Locally</button>
+                            <button type="button" class="btn-niche-main" id="btn-auth-signup">Create Workspace</button>
                         </div>
                     </div>
 
                     <div id="mode-email" class="tab-content">
                         <div class="pin-niche-container">
-                            <input type="email" id="auth-email-input" class="niche-input" placeholder="your@email.com"
-                                style="text-align: center; font-size: 24px;">
+                            <input type="email" id="auth-email-input" class="niche-input" placeholder="your@email.com">
                             <button type="button" class="btn-niche-main" id="btn-magic-signup">Send Magic Link
                                 ✨</button>
                         </div>
