@@ -26,11 +26,13 @@ export async function _initAuth() {
         $('#auth-login-layer').classList.add('hide');
     }
 
-    // Tab Switching Logic (Niche Aesthetic)
+    // Tab Switching Logic — scoped to parent container
     $$('.switch-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            $$('.switch-btn').forEach(b => b.classList.remove('active'));
-            $$('.tab-content').forEach(c => c.classList.remove('active'));
+            const container = btn.closest('#auth-signup-layer, #auth-login-layer');
+            if (!container) return;
+            container.querySelectorAll('.switch-btn').forEach(b => b.classList.remove('active'));
+            container.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             btn.classList.add('active');
             const target = btn.dataset.target;
             $('#' + target).classList.add('active');
@@ -52,23 +54,39 @@ export async function _initAuth() {
 }
 
 export async function _handleMagicLink(selector) {
-    const email = $(selector).value.trim();
+    const emailEl = $(selector);
     const errorNode = $('#auth-error');
 
+    if (!emailEl) {
+        errorNode.textContent = "Email field not found.";
+        return;
+    }
+
+    const email = emailEl.value.trim();
+
     if (!email || !email.includes('@')) {
-        errorNode.textContent = "Please enter a valid email.";
+        errorNode.textContent = "Please enter a valid email address.";
+        return;
+    }
+
+    // Check if Supabase is configured
+    const { isSupabaseConfigured } = await import('./supabase.js');
+    if (!isSupabaseConfigured()) {
+        errorNode.textContent = "Cloud sync is not configured. Check your Supabase keys in .env";
+        errorNode.style.color = "var(--clr-alert)";
         return;
     }
 
     try {
-        errorNode.textContent = "Sending magic link...";
-        errorNode.style.color = "var(--clr-brand-dim)";
+        errorNode.textContent = "Sending login link...";
+        errorNode.style.color = "#555";
+        errorNode.classList.add('visible');
         await signInWithMagicLink(email);
-        errorNode.textContent = "Check your email for the login link!";
+        errorNode.textContent = "Check your email for the login link.";
         errorNode.style.color = "#007054";
     } catch (e) {
         console.error('Magic Link Error:', e);
-        errorNode.textContent = "Error sending link. Try again.";
+        errorNode.textContent = e.message || "Error sending link. Try again.";
         errorNode.style.color = "var(--clr-alert)";
     }
 }
