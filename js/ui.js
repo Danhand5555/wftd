@@ -390,7 +390,7 @@ export function _mountSurface(state, itinerary, insights) {
                     ${node.loc ? '<span class="data-pill" onclick="event.stopPropagation(); window._openMap(\'' + node.loc + '\')">📍 Map</span>' : ''}
                     ${typeof node.cost === 'number' && node.cost > 0 ? '<span class="data-pill val-green">$$</span>' : ''}
                     <span class="data-pill pill-timer ${state.running ? 'pill-timer-active' : ''}" data-task-id="${taskId}" onclick="event.stopPropagation(); window._toggleTaskTimer('${taskId}')">
-                        <i data-lucide="${state.running ? 'pause' : 'play'}" style="width:10px;height:10px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>
+                        <i data-lucide="${state.running ? 'pause' : 'play'}" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>
                         <span class="timer-display">${_formatElapsed(state.elapsed)}</span>
                     </span>
                 </div>
@@ -414,8 +414,7 @@ export function _mountSurface(state, itinerary, insights) {
 export function _bindModalEvents() {
     _bindProfileEvents();
     $('#timeline-root').addEventListener('click', (e) => {
-        // Don't open modal if clicking on buttons/controls
-        if (e.target.closest('button') || e.target.closest('.task-tracker')) return;
+        if (e.target.closest('.pill-check') || e.target.closest('.pill-timer')) return;
 
         const nodeEl = e.target.closest('.track-node');
         if (!nodeEl) return;

@@ -2092,9 +2092,11 @@ input {
     color: #666;
     display: inline-flex;
     align-items: center;
-    gap: 2px;
+    gap: 4px;
     user-select: none;
     transition: all 0.15s var(--ease-snappy);
+    padding: 4px 10px;
+    font-size: 11px;
 }
 
 .pill-timer:hover {
@@ -2116,7 +2118,7 @@ input {
 
 .timer-display {
     font-family: monospace;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0;
     text-transform: none;
