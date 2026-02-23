@@ -31,8 +31,15 @@ export async function _handleCompile(e) {
             const startLat = $('#loc-hidden-lat')?.value || 13.7563;
             const startLon = $('#loc-hidden-lon')?.value || 100.5018;
 
+            let ocrText = "";
+            const fileInput = $('#pdf-upload-input');
+            if (fileInput && fileInput.files.length > 0) {
+                // Placeholder for future OCR/Mistral PDF processing
+                ocrText = `\n[FILE ATTACHED: ${fileInput.files[0].name}] — OCR API integration pending.`;
+            }
+
             const weatherContext = await _getWeatherContext(startLat, startLon);
-            const prompt = _constructCompilePrompt(payload, userJob, foodPref, startLocName, startLat, startLon, weatherContext);
+            const prompt = _constructCompilePrompt(payload, userJob, foodPref, startLocName, startLat, startLon, weatherContext, ocrText);
 
             const response = await fetch(geminiUrl, {
                 method: 'POST',
@@ -149,12 +156,13 @@ export function _generateTelemetryLogs(payload) {
     return logs;
 }
 
-export function _constructCompilePrompt(payload, userJob, foodPref, startLocName, startLat, startLon, weatherContext) {
+export function _constructCompilePrompt(payload, userJob, foodPref, startLocName, startLat, startLon, weatherContext, ocrText = "") {
     const startLocClause = (startLat && startLon) ? `\nUser's STARTING LOCATION: "${startLocName}" (lat: ${startLat}, lon: ${startLon}). ${weatherContext}` : `\nUser's location: ${startLocName}, Bangkok. ${weatherContext}`;
     const notesClause = payload.notes ? `\n\nExtra instructions: ${payload.notes}` : '';
+    const ocrClause = ocrText ? `\n\nPDF Schedule Context: ${ocrText}` : '';
     return `You are a creative personal scheduler for a user in Bangkok. Return ONLY raw JSON.
 Format: {"itinerary": [{"time":"9:00 AM","t":"Task","d":"Desc","cat":"work","dr":"2h","loc":"Place", "cost": 500}], "insights": ["tip1", "tip2"]}
-User data: ${JSON.stringify(payload)}${notesClause}${startLocClause}`;
+User data: ${JSON.stringify(payload)}${notesClause}${startLocClause}${ocrClause}`;
 }
 
 export async function _getWeatherContext(lat = 13.7563, lon = 100.5018) {

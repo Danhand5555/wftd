@@ -7,7 +7,7 @@ import { _initAuth } from './js/auth.js';
 import { _initChat } from './js/chat.js';
 import { _handleCompile, _synthesizeItinerary } from './js/engine.js';
 import { CORE_REGIMEN } from './js/config.js';
-import { _nextStep, _prevStep, _handleGoalFeedback, _handleEntitiesFeedback, _handleAgendaFeedback, _handleBudgetFeedback, _handleEodFeedback, _bindModalEvents, _initLocPicker } from './js/ui.js';
+import { _nextStep, _prevStep, _handleGoalFeedback, _handleEntitiesFeedback, _handleAgendaFeedback, _handleBudgetFeedback, _handleEodFeedback, _bindModalEvents, _initLocPicker, _initFileHandling } from './js/ui.js';
 import { _handleExportCalendar } from './js/calendar.js';
 
 document.addEventListener('DOMContentLoaded', _initEngine);
@@ -17,6 +17,7 @@ function _initEngine() {
     _initAuth();
     _initChat();
     setTimeout(_initLocPicker, 200);
+    setTimeout(_initFileHandling, 300);
 
     // 2. Inject Date Meta
     const formatter = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'numeric', day: 'numeric' });

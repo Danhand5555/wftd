@@ -608,3 +608,27 @@ export function _initLocPicker() {
         setTimeout(() => _locPickerMap && _locPickerMap.invalidateSize(), 200);
     });
 }
+
+export function _initFileHandling() {
+    const input = $('#pdf-upload-input');
+    const btn = $('#pdf-upload-btn');
+    const status = $('#file-status');
+
+    if (!input || !btn) return;
+
+    btn.addEventListener('click', () => input.click());
+
+    input.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            btn.classList.add('has-file');
+            btn.querySelector('span').textContent = `Attached: ${file.name}`;
+            status.textContent = 'Ready for AI OCR context.';
+            status.style.display = 'block';
+        } else {
+            btn.classList.remove('has-file');
+            btn.querySelector('span').textContent = 'Attach Schedule PDF (OCR ready)';
+            status.style.display = 'none';
+        }
+    });
+}

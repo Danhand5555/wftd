@@ -351,6 +351,32 @@ input {
     color: var(--clr-ink);
 }
 
+.btn-file-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px dashed rgba(0, 0, 0, 0.2);
+    border-radius: var(--radii-soft);
+    color: #666;
+    font-size: var(--tx-sm);
+    font-weight: var(--wght-medium);
+    transition: all 0.2s;
+}
+
+.btn-file-trigger:hover {
+    background: #fdfdfa;
+    border-color: var(--clr-ink);
+    color: var(--clr-ink);
+}
+
+.btn-file-trigger.has-file {
+    background: var(--clr-brand);
+    border-color: var(--clr-ink);
+    border-style: solid;
+    color: var(--clr-ink);
+}
+
 
 /* -------------------------------------
    Main Surface Architecture
