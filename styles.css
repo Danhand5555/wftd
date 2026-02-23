@@ -426,7 +426,9 @@
 
 .pin-entry {
     width: 100%;
-    padding: 14px 12px;
+    height: 64px;
+    /* Force consistent height */
+    padding: 12px;
     border: 1px solid var(--clr-chrome);
     border-radius: var(--radii-hard);
     font-size: 28px;
@@ -436,27 +438,46 @@
     color: var(--clr-ink);
     background: var(--clr-paper);
     outline: none;
-    transition: border-color 0.15s;
+    transition: all 0.15s;
+}
+
+.pin-entry[type="email"] {
+    font-size: var(--tx-base);
+    letter-spacing: normal;
+    text-align: left;
+    padding: 0 16px;
+    font-weight: var(--wght-medium);
 }
 
 .pin-entry:focus {
     border-color: var(--clr-ink);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
 }
 
 .pin-entry::placeholder {
     color: #ddd;
+    letter-spacing: normal;
+}
+
+.pin-entry[type="password"]::placeholder {
     letter-spacing: 12px;
 }
 
 /* Buttons */
 .btn-auth-primary {
     width: 100%;
-    padding: 16px;
+    height: 56px;
+    /* High-end fixed height */
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: var(--clr-brand);
     color: var(--clr-ink);
     font-size: var(--tx-base);
-    font-weight: var(--wght-bold);
-    border: 2px solid var(--clr-ink);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border: 3px solid var(--clr-ink);
     border-radius: var(--radii-soft);
     cursor: pointer;
     transition: all 0.2s var(--ease-snappy);
