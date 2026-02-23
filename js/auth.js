@@ -3,8 +3,43 @@ import { _mountSurface, _renderAllStepSuggestions } from './ui.js';
 import { signInWithGoogle, getUser, signOut, signInWithMagicLink, supabase } from './supabase.js';
 
 export async function _initAuth() {
-    // Listen for auth state changes (handles magic link callback)
+    // Handle magic link callback (PKCE flow)
     if (supabase) {
+        // Check for PKCE code in URL query params
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get('code');
+        if (code) {
+            console.log('[Auth] PKCE code detected, exchanging for session...');
+            try {
+                const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+                if (error) {
+                    console.error('[Auth] Code exchange error:', error);
+                } else if (data?.user) {
+                    console.log('[Auth] Session established via PKCE');
+                    // Clean the URL
+                    window.history.replaceState({}, '', window.location.pathname);
+                    localStorage.setItem('wftd_alias', data.user.user_metadata?.full_name || data.user.email.split('@')[0]);
+                    _unlockWorkspace(localStorage.getItem('wftd_alias'));
+                    return;
+                }
+            } catch (e) {
+                console.error('[Auth] Code exchange failed:', e);
+            }
+        }
+
+        // Also handle hash-based token flow (legacy)
+        if (window.location.hash.includes('access_token')) {
+            console.log('[Auth] Hash tokens detected, waiting for session...');
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user) {
+                window.history.replaceState({}, '', window.location.pathname);
+                localStorage.setItem('wftd_alias', session.user.user_metadata?.full_name || session.user.email.split('@')[0]);
+                _unlockWorkspace(localStorage.getItem('wftd_alias'));
+                return;
+            }
+        }
+
+        // Listen for future auth state changes
         supabase.auth.onAuthStateChange((event, session) => {
             console.log('[Auth] State change:', event);
             if (event === 'SIGNED_IN' && session?.user) {
