@@ -51,6 +51,18 @@ export async function _initAuth() {
         localStorage.clear();
         location.reload();
     });
+
+    // Toggle between Sign Up and Sign In
+    $('#btn-goto-login')?.addEventListener('click', () => {
+        $('#auth-signup-layer').classList.add('hide');
+        $('#auth-login-layer').classList.remove('hide');
+        $('#auth-error').textContent = '';
+    });
+    $('#btn-goto-signup')?.addEventListener('click', () => {
+        $('#auth-login-layer').classList.add('hide');
+        $('#auth-signup-layer').classList.remove('hide');
+        $('#auth-error').textContent = '';
+    });
 }
 
 export async function _handleMagicLink(selector) {
