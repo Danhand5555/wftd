@@ -56,38 +56,45 @@ export async function _initAuth() {
 export async function _handleMagicLink(selector) {
     const emailEl = $(selector);
     const errorNode = $('#auth-error');
+    console.log('[MagicLink] Handler triggered, selector:', selector);
 
     if (!emailEl) {
+        console.error('[MagicLink] Email element not found:', selector);
         errorNode.textContent = "Email field not found.";
+        errorNode.style.cssText = 'opacity:1; transform:none; color:var(--clr-alert)';
         return;
     }
 
     const email = emailEl.value.trim();
+    console.log('[MagicLink] Email value:', email);
 
     if (!email || !email.includes('@')) {
         errorNode.textContent = "Please enter a valid email address.";
+        errorNode.style.cssText = 'opacity:1; transform:none; color:var(--clr-alert)';
         return;
     }
 
     // Check if Supabase is configured
     const { isSupabaseConfigured } = await import('./supabase.js');
+    console.log('[MagicLink] Supabase configured:', isSupabaseConfigured());
     if (!isSupabaseConfigured()) {
-        errorNode.textContent = "Cloud sync is not configured. Check your Supabase keys in .env";
-        errorNode.style.color = "var(--clr-alert)";
+        errorNode.textContent = "Cloud sync not configured. Set Supabase keys in .env";
+        errorNode.style.cssText = 'opacity:1; transform:none; color:var(--clr-alert)';
         return;
     }
 
     try {
         errorNode.textContent = "Sending login link...";
-        errorNode.style.color = "#555";
-        errorNode.classList.add('visible');
-        await signInWithMagicLink(email);
+        errorNode.style.cssText = 'opacity:1; transform:none; color:#555';
+        console.log('[MagicLink] Calling signInWithMagicLink...');
+        const result = await signInWithMagicLink(email);
+        console.log('[MagicLink] Result:', result);
         errorNode.textContent = "Check your email for the login link.";
-        errorNode.style.color = "#007054";
+        errorNode.style.cssText = 'opacity:1; transform:none; color:#007054';
     } catch (e) {
-        console.error('Magic Link Error:', e);
+        console.error('[MagicLink] Error:', e);
         errorNode.textContent = e.message || "Error sending link. Try again.";
-        errorNode.style.color = "var(--clr-alert)";
+        errorNode.style.cssText = 'opacity:1; transform:none; color:var(--clr-alert)';
     }
 }
 

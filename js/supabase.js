@@ -64,7 +64,7 @@ export async function signInWithGoogle() {
  * Auth: Sign in with Magic Link (Email)
  */
 export async function signInWithMagicLink(email) {
-    if (!supabase) return;
+    if (!supabase) throw new Error('Supabase client not initialized.');
     const { data, error } = await supabase.auth.signInWithOtp({
         email,
         options: {
