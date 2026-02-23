@@ -79,9 +79,9 @@
 
 .auth-box {
     width: 100%;
-    max-width: 440px;
-    padding: 20px;
-    /* Extra breathing room on desktop */
+    max-width: 480px;
+    /* Made it longer horizontally */
+    padding: 24px;
 }
 
 /* Wizard Animations */
@@ -422,8 +422,8 @@
 
 .tab-content {
     display: none;
-    height: 136px;
-    /* Lock height even when hidden */
+    height: 144px;
+    /* Scaled up: 72 + 16 + 56 */
     overflow: hidden;
 }
 
@@ -441,8 +441,8 @@
 /* PIN */
 .pin-entry {
     width: 100%;
-    height: 64px;
-    /* Force consistent height */
+    height: 72px;
+    /* Increased height for a more substantial feel */
     padding: 12px;
     border: 1px solid var(--clr-chrome);
     border-radius: var(--radii-hard);
@@ -454,7 +454,6 @@
     background: var(--clr-paper);
     outline: none;
     line-height: 1;
-    /* Prevent vertical expansion from font metrics */
     transition: all 0.2s var(--ease-snappy);
 }
 
