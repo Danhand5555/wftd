@@ -378,7 +378,7 @@ export function _mountSurface(state, itinerary, insights) {
             <time class="node-meta">${_formatTo12h(node.time)}</time>
             <div class="node-surface">
                 <div class="node-title-row">
-                    <button type="button" class="pill-check ${state.done ? 'is-done' : ''}" onclick="event.stopPropagation(); window._toggleTaskDone('${taskId}')">
+                    <button type="button" class="pill-check ${state.done ? 'is-done' : ''}">
                         <i data-lucide="${state.done ? 'check' : 'square'}"></i>
                     </button>
                     <h3>${node.t}</h3>
@@ -387,10 +387,10 @@ export function _mountSurface(state, itinerary, insights) {
                 <div class="pill-cluster">
                     <span class="data-pill pill-${node.cat}">${node.cat}</span>
                     <span class="data-pill">TR: ${node.dr}</span>
-                    ${node.loc ? '<span class="data-pill" onclick="event.stopPropagation(); window._openMap(\'' + node.loc + '\')">📍 Map</span>' : ''}
+                    ${node.loc ? '<span class="data-pill pill-map" data-loc="' + node.loc.replace(/"/g, '&quot;') + '">📍 Map</span>' : ''}
                     ${typeof node.cost === 'number' && node.cost > 0 ? '<span class="data-pill val-green">$$</span>' : ''}
-                    <span class="data-pill pill-timer ${state.running ? 'pill-timer-active' : ''}" data-task-id="${taskId}" onclick="event.stopPropagation(); window._toggleTaskTimer('${taskId}')">
-                        <i data-lucide="${state.running ? 'pause' : 'play'}" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>
+                    <span class="data-pill pill-timer ${state.running ? 'pill-timer-active' : ''}" data-task-id="${taskId}">
+                        <i data-lucide="${state.running ? 'pause' : 'play'}" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>
                         <span class="timer-display">${_formatElapsed(state.elapsed)}</span>
                     </span>
                 </div>
@@ -414,7 +414,26 @@ export function _mountSurface(state, itinerary, insights) {
 export function _bindModalEvents() {
     _bindProfileEvents();
     $('#timeline-root').addEventListener('click', (e) => {
-        if (e.target.closest('.pill-check') || e.target.closest('.pill-timer')) return;
+        const checkBtn = e.target.closest('.pill-check');
+        if (checkBtn) {
+            const taskId = checkBtn.closest('.track-node').dataset.taskId;
+            window._toggleTaskDone(taskId, checkBtn);
+            return;
+        }
+
+        const timerBtn = e.target.closest('.pill-timer');
+        if (timerBtn) {
+            const taskId = timerBtn.dataset.taskId;
+            window._toggleTaskTimer(taskId, timerBtn);
+            return;
+        }
+
+        const mapBtn = e.target.closest('.pill-map');
+        if (mapBtn) {
+            const loc = mapBtn.dataset.loc;
+            if (loc) window._openMap(loc);
+            return;
+        }
 
         const nodeEl = e.target.closest('.track-node');
         if (!nodeEl) return;
@@ -752,19 +771,23 @@ function _formatElapsed(seconds) {
 }
 
 // Global functions for inline event handlers
-window._toggleTaskDone = (taskId) => {
+window._toggleTaskDone = (taskId, btnEl) => {
     const states = JSON.parse(localStorage.getItem('wftd_task_states') || '{}');
     if (!states[taskId]) states[taskId] = { done: false, elapsed: 0, running: false };
     states[taskId].done = !states[taskId].done;
     localStorage.setItem('wftd_task_states', JSON.stringify(states));
 
-    // Refresh UI
-    const saved = JSON.parse(localStorage.getItem('wftd_today_schedule'));
-    if (saved) _mountSurface(saved.state, saved.itinerary, saved.insights);
+    if (btnEl) {
+        btnEl.classList.toggle('is-done', states[taskId].done);
+        btnEl.innerHTML = `<i data-lucide="${states[taskId].done ? 'check' : 'square'}"></i>`;
+        if (window.lucide) window.lucide.createIcons({ root: btnEl });
+        const nodeEl = btnEl.closest('.track-node');
+        if (nodeEl) nodeEl.classList.toggle('status-done', states[taskId].done);
+    }
 };
 
 let timerInterval;
-window._toggleTaskTimer = (taskId) => {
+window._toggleTaskTimer = (taskId, btnEl) => {
     const states = JSON.parse(localStorage.getItem('wftd_task_states') || '{}');
     if (!states[taskId]) states[taskId] = { done: false, elapsed: 0, running: false };
 
@@ -772,7 +795,15 @@ window._toggleTaskTimer = (taskId) => {
 
     // Stop all other running timers first (optional - focus mode)
     Object.keys(states).forEach(id => {
-        states[id].running = false;
+        if (states[id].running && id !== taskId) {
+            states[id].running = false;
+            const otherBtn = document.querySelector(`.pill-timer[data-task-id="${id}"]`);
+            if (otherBtn) {
+                otherBtn.classList.remove('pill-timer-active');
+                otherBtn.innerHTML = `<i data-lucide="play" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px;"></i><span class="timer-display">${_formatElapsed(states[id].elapsed)}</span>`;
+                if (window.lucide) window.lucide.createIcons({ root: otherBtn });
+            }
+        }
     });
 
     states[taskId].running = !wasRunning;
@@ -784,9 +815,11 @@ window._toggleTaskTimer = (taskId) => {
         _stopGlobalTimerIfNoneRunning();
     }
 
-    // Refresh UI
-    const saved = JSON.parse(localStorage.getItem('wftd_today_schedule'));
-    if (saved) _mountSurface(saved.state, saved.itinerary, saved.insights);
+    if (btnEl) {
+        btnEl.classList.toggle('pill-timer-active', states[taskId].running);
+        btnEl.innerHTML = `<i data-lucide="${states[taskId].running ? 'pause' : 'play'}" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px;"></i><span class="timer-display">${_formatElapsed(states[taskId].elapsed)}</span>`;
+        if (window.lucide) window.lucide.createIcons({ root: btnEl });
+    }
 };
 
 function _startGlobalTimer() {

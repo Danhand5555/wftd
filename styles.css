@@ -2055,10 +2055,10 @@ input {
 .pill-check {
     background: transparent;
     border: 2px solid var(--clr-ink);
-    width: 18px;
-    height: 18px;
-    min-width: 18px;
-    border-radius: 3px;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2081,8 +2081,8 @@ input {
 
 .pill-check i,
 .pill-check svg {
-    width: 12px;
-    height: 12px;
+    width: 16px;
+    height: 16px;
 }
 
 /* Timer pill — sits in the pill-cluster row like other pills */
@@ -2092,11 +2092,11 @@ input {
     color: #666;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     user-select: none;
     transition: all 0.15s var(--ease-snappy);
-    padding: 4px 10px;
-    font-size: 11px;
+    padding: 6px 12px;
+    font-size: 13px;
 }
 
 .pill-timer:hover {
@@ -2118,7 +2118,7 @@ input {
 
 .timer-display {
     font-family: monospace;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: 0;
     text-transform: none;
