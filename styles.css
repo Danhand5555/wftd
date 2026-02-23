@@ -2038,40 +2038,41 @@ input {
     margin: 0 10px;
 }
 
-/* Task Tracker — Right Aligned Layout */
+/* Task Tracker — Inline Title Layout */
 .node-surface {
-    position: relative;
     background: var(--clr-paper);
     border: 1px solid var(--clr-chrome);
     padding: var(--space-16);
-    padding-right: 90px;
-    /* Space for the floating tracker */
     border-radius: var(--radii-hard);
     transition: box-shadow 0.2s, transform 0.2s;
 }
 
-.node-surface h3 {
-    margin-bottom: 4px;
+.node-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-8);
+    gap: var(--space-12);
 }
 
-.task-tracker-right {
-    position: absolute;
-    top: var(--space-16);
-    right: var(--space-16);
+.title-left-group {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    /* Align to the right edge */
-    gap: var(--space-12);
-    pointer-events: auto;
+    align-items: center;
+    gap: var(--space-8);
+}
+
+.title-left-group h3 {
+    margin-bottom: 0;
+    font-size: var(--tx-md);
 }
 
 .pill-check {
     background: transparent;
     border: 2px solid var(--clr-ink);
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2094,23 +2095,23 @@ input {
 
 .pill-check i,
 .pill-check svg {
-    width: 18px;
-    height: 18px;
+    width: 14px;
+    height: 14px;
 }
 
-/* Large Right Clock */
+/* Inline Right Clock */
 .large-clock {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     cursor: pointer;
-    padding: 8px 12px;
+    padding: 4px 8px;
     border-radius: var(--radii-soft);
     transition: all 0.2s;
     user-select: none;
     border: 1px solid var(--clr-chrome);
     background: var(--clr-paper);
+    color: var(--clr-ink);
 }
 
 .large-clock:hover {
@@ -2130,15 +2131,15 @@ input {
 
 .clock-icon i,
 .clock-icon svg {
-    width: 20px;
-    height: 20px;
+    width: 14px;
+    height: 14px;
 }
 
 .timer-display {
     font-family: monospace;
-    font-size: 14px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0;
 }
 
 /* Task Done State */
