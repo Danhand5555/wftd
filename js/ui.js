@@ -385,6 +385,7 @@ export function _mountSurface(state, itinerary, insights) {
 }
 
 export function _bindModalEvents() {
+    _bindProfileEvents();
     $('#timeline-root').addEventListener('click', (e) => {
         const nodeEl = e.target.closest('.track-node');
         if (!nodeEl) return;
@@ -426,6 +427,55 @@ export function _bindModalEvents() {
             } catch (err) { console.error('Error saving edits', err); }
             _closeDetailModal();
         }
+    });
+}
+
+export function _bindProfileEvents() {
+    const openBtn = $('#profile-open-btn');
+    const closeBtn = $('#profile-close-btn');
+    const saveBtn = $('#profile-save-btn');
+    const modal = $('#profile-modal');
+
+    if (!modal) return;
+
+    if (openBtn) {
+        openBtn.addEventListener('click', () => {
+            $('#profile-alias').value = localStorage.getItem('wftd_alias') || '';
+            $('#profile-job').value = localStorage.getItem('wftd_job') || '';
+            $('#profile-food').value = localStorage.getItem('wftd_food') || '';
+            $('#profile-memory').value = localStorage.getItem('wftd_memory') || '';
+
+            modal.classList.remove('hide');
+            modal.setAttribute('aria-hidden', 'false');
+        });
+    }
+
+    const closeModal = () => {
+        modal.classList.add('hide');
+        modal.setAttribute('aria-hidden', 'true');
+    };
+
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+            const newAlias = $('#profile-alias').value.trim();
+            if (newAlias) localStorage.setItem('wftd_alias', newAlias);
+
+            localStorage.setItem('wftd_job', $('#profile-job').value.trim());
+            localStorage.setItem('wftd_food', $('#profile-food').value.trim());
+            localStorage.setItem('wftd_memory', $('#profile-memory').value.trim());
+
+            saveBtn.textContent = 'Saved!';
+            setTimeout(() => {
+                saveBtn.innerHTML = 'Save';
+                closeModal();
+            }, 800);
+        });
+    }
+
+    modal.addEventListener('click', (e) => {
+        if (e.target.id === 'profile-modal') closeModal();
     });
 }
 

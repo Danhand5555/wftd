@@ -162,12 +162,14 @@ export function _generateTelemetryLogs(payload) {
 }
 
 export function _constructCompilePrompt(payload, userJob, foodPref, startLocName, startLat, startLon, weatherContext, ocrText = "") {
+    const memory = localStorage.getItem('wftd_memory') || '';
     const startLocClause = (startLat && startLon) ? `\nUser's STARTING LOCATION: "${startLocName}" (lat: ${startLat}, lon: ${startLon}). ${weatherContext}` : `\nUser's location: ${startLocName}, Bangkok. ${weatherContext}`;
     const notesClause = payload.notes ? `\n\nExtra instructions: ${payload.notes}` : '';
     const ocrClause = ocrText ? `\n\nPDF Schedule Context: ${ocrText}` : '';
+    const memoryClause = memory ? `\n\nUser's Long-Term Memory / Habits: ${memory}` : '';
     return `You are a creative personal scheduler for a user in Bangkok. Return ONLY raw JSON.
 Format: {"itinerary": [{"time":"9:00 AM","t":"Task","d":"Desc","cat":"work","dr":"2h","loc":"Place", "cost": 500}], "insights": ["tip1", "tip2"]}
-User data: ${JSON.stringify(payload)}${notesClause}${startLocClause}${ocrClause}`;
+User data: ${JSON.stringify(payload)}${notesClause}${memoryClause}${startLocClause}${ocrClause}`;
 }
 
 export async function _getWeatherContext(lat = 13.7563, lon = 100.5018) {

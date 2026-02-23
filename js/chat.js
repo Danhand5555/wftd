@@ -32,7 +32,11 @@ export async function _sendChatMessage() {
     chatHistory.push({ role: 'user', text: userText });
     const foodPref = localStorage.getItem('wftd_food') || 'No restrictions';
     const userJob = localStorage.getItem('wftd_job') || 'Professional';
-    const systemPrompt = `You are SCHED AI. Schedule: ${scheduleContext}. User: ${userJob}, ${foodPref}. Return JSON for updates: {"type":"schedule_update","message":"...","schedule":[...]}. Otherwise plain text.`;
+    const memory = localStorage.getItem('wftd_memory') || '';
+    const systemPrompt = `You are SCHED AI. Schedule: ${scheduleContext}. User: ${userJob}, ${foodPref}. 
+User Memory (Habits/Preferences): ${memory}. 
+If the user tells you a new habit, preference, or fact to remember for ALWAYS, return a JSON: {"type":"memory_update","message":"Got it.","new_fact":"The new fact"}.
+If they want to update the current schedule, return JSON: {"type":"schedule_update","message":"...","schedule":[...]}. Otherwise plain text.`;
 
     try {
         const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
@@ -61,6 +65,18 @@ export async function _sendChatMessage() {
                 saved.itinerary = parsed.schedule;
                 localStorage.setItem('wftd_today_schedule', JSON.stringify(saved));
                 _mountSurface(saved.state || {}, parsed.schedule, saved.insights || []);
+                return;
+            }
+            if (parsed.type === 'memory_update' && parsed.new_fact) {
+                _appendChatMsg(parsed.message || 'Got it. I will remember this for next time!', 'ai');
+                const existingMem = localStorage.getItem('wftd_memory') || '';
+                const newMem = existingMem ? existingMem + '\n- ' + parsed.new_fact : '- ' + parsed.new_fact;
+                localStorage.setItem('wftd_memory', newMem);
+
+                // Also update the UI element if modal is open
+                const profileMemNode = document.getElementById('profile-memory');
+                if (profileMemNode) profileMemNode.value = newMem;
+
                 return;
             }
         } catch (e) { }

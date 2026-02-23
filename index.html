@@ -388,7 +388,8 @@
                 </div>
                 <div class="nav-utils">
                     <time id="meta-time" class="meta-txt"></time>
-                    <div class="avatar-node"></div>
+                    <button type="button" class="avatar-node" id="profile-open-btn" title="AI Context Profile"
+                        style="border:none; cursor:pointer; padding:0; outline:none;"></button>
                 </div>
             </nav>
 
@@ -543,6 +544,53 @@
                         <div class="cost-display">
                             <span id="modal-cost" class="val-green">$--</span>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile / Memory Modal -->
+        <div id="profile-modal" class="modal-overlay hide" aria-hidden="true">
+            <div class="modal-surface" style="max-width: 500px;">
+                <header class="modal-header">
+                    <h3 class="type-h3">AI Context Profile</h3>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" class="btn-ghost val-green" id="profile-save-btn">Save</button>
+                        <button type="button" class="btn-ghost icon-btn" id="profile-close-btn">&times;</button>
+                    </div>
+                </header>
+                <div class="modal-body">
+                    <p class="modal-desc" style="margin-bottom: 16px;">What SCHED AI currently knows about you.</p>
+
+                    <div class="auth-field" style="margin-bottom: 12px;">
+                        <label for="profile-alias"
+                            style="color:var(--clr-brand); font-size:11px; text-transform:uppercase; font-weight:var(--wght-bold); display:block; margin-bottom:4px;">Name</label>
+                        <input type="text" id="profile-alias" class="input-majestic"
+                            style="font-size:16px; padding: 10px; border:2px solid var(--clr-ink); border-radius:var(--radii-hard); width:100%;">
+                    </div>
+
+                    <div class="auth-row" style="margin-bottom: 12px;">
+                        <div class="auth-field">
+                            <label for="profile-job"
+                                style="color:var(--clr-brand); font-size:11px; text-transform:uppercase; font-weight:var(--wght-bold); display:block; margin-bottom:4px;">Role</label>
+                            <input type="text" id="profile-job" class="input-majestic"
+                                style="font-size:16px; padding: 10px; border:2px solid var(--clr-ink); border-radius:var(--radii-hard); width:100%;">
+                        </div>
+                        <div class="auth-field">
+                            <label for="profile-food"
+                                style="color:var(--clr-brand); font-size:11px; text-transform:uppercase; font-weight:var(--wght-bold); display:block; margin-bottom:4px;">Diet</label>
+                            <input type="text" id="profile-food" class="input-majestic"
+                                style="font-size:16px; padding: 10px; border:2px solid var(--clr-ink); border-radius:var(--radii-hard); width:100%;">
+                        </div>
+                    </div>
+
+                    <div class="auth-field" style="margin-top: 16px;">
+                        <label for="profile-memory"
+                            style="color:var(--clr-brand); font-size:11px; text-transform:uppercase; font-weight:var(--wght-bold); display:block; margin-bottom:4px;">Long-term
+                            Memory (Habits & Preferences)</label>
+                        <textarea id="profile-memory" class="input-majestic" rows="4"
+                            style="font-size:14px; padding: 10px; border:2px solid var(--clr-ink); border-radius:var(--radii-hard); width:100%; resize:vertical; line-height:1.4;"
+                            placeholder="e.g. I must take a 30 min walk at 6 PM. I hate early morning meetings."></textarea>
                     </div>
                 </div>
             </div>
