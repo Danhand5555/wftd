@@ -2038,36 +2038,32 @@ input {
     margin: 0 10px;
 }
 
-/* Task Tracker — Left Aligned Clock Layout */
+/* Task Tracker — Right Aligned Layout */
 .node-surface {
+    position: relative;
     background: var(--clr-paper);
     border: 1px solid var(--clr-chrome);
     padding: var(--space-16);
+    padding-right: 90px;
+    /* Space for the floating tracker */
     border-radius: var(--radii-hard);
     transition: box-shadow 0.2s, transform 0.2s;
-    display: flex;
-    gap: var(--space-16);
-    align-items: flex-start;
 }
 
-.task-tracker-left {
+.node-surface h3 {
+    margin-bottom: 4px;
+}
+
+.task-tracker-right {
+    position: absolute;
+    top: var(--space-16);
+    right: var(--space-16);
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-end;
+    /* Align to the right edge */
     gap: var(--space-12);
-    min-width: 60px;
-    padding-right: var(--space-12);
-    border-right: 1px solid var(--clr-chrome);
-    flex-shrink: 0;
-}
-
-.node-content-right {
-    flex: 1;
-    min-width: 0;
-}
-
-.node-content-right h3 {
-    margin-bottom: 4px;
+    pointer-events: auto;
 }
 
 .pill-check {
@@ -2102,23 +2098,24 @@ input {
     height: 18px;
 }
 
-/* Large Left Clock */
+/* Large Right Clock */
 .large-clock {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 4px;
     cursor: pointer;
-    padding: 8px 4px;
+    padding: 8px 12px;
     border-radius: var(--radii-soft);
     transition: all 0.2s;
     user-select: none;
-    border: 1px solid transparent;
+    border: 1px solid var(--clr-chrome);
+    background: var(--clr-paper);
 }
 
 .large-clock:hover {
     background: rgba(0, 0, 0, 0.03);
-    border-color: var(--clr-chrome);
+    border-color: var(--clr-ink);
 }
 
 .large-clock.is-running {

@@ -377,24 +377,23 @@ export function _mountSurface(state, itinerary, insights) {
         <article class="track-node ${state.done ? 'status-done' : ''}" data-index="${i}" data-task-id="${taskId}" style="animation-delay: ${i * 0.12}s; cursor: pointer;" data-info="${JSON.stringify(node).replace(/"/g, '&quot;')}">
             <time class="node-meta">${_formatTo12h(node.time)}</time>
             <div class="node-surface">
-                <div class="task-tracker-left">
+                <h3>${node.t}</h3>
+                <p>${node.d}</p>
+                
+                <div class="pill-cluster">
+                    <span class="data-pill pill-${node.cat}">${node.cat}</span>
+                    <span class="data-pill">TR: ${node.dr}</span>
+                    ${node.loc ? '<span class="data-pill pill-map" data-loc="' + node.loc.replace(/"/g, '&quot;') + '">📍 Map</span>' : ''}
+                    ${typeof node.cost === 'number' && node.cost > 0 ? '<span class="data-pill val-green">$$</span>' : ''}
+                </div>
+
+                <div class="task-tracker-right">
                     <button type="button" class="pill-check ${state.done ? 'is-done' : ''}" data-task-id="${taskId}">
                         <i data-lucide="${state.done ? 'check' : 'square'}"></i>
                     </button>
                     <div class="large-clock ${state.running ? 'is-running' : ''}" data-task-id="${taskId}">
                         <div class="clock-icon"><i data-lucide="${state.running ? 'pause' : 'play'}"></i></div>
                         <span class="timer-display">${_formatElapsed(state.elapsed)}</span>
-                    </div>
-                </div>
-                
-                <div class="node-content-right">
-                    <h3>${node.t}</h3>
-                    <p>${node.d}</p>
-                    <div class="pill-cluster">
-                        <span class="data-pill pill-${node.cat}">${node.cat}</span>
-                        <span class="data-pill">TR: ${node.dr}</span>
-                        ${node.loc ? '<span class="data-pill pill-map" data-loc="' + node.loc.replace(/"/g, '&quot;') + '">📍 Map</span>' : ''}
-                        ${typeof node.cost === 'number' && node.cost > 0 ? '<span class="data-pill val-green">$$</span>' : ''}
                     </div>
                 </div>
             </div>
