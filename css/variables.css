@@ -1,0 +1,54 @@
+/* 
+   WFTD // Stylesheet
+   Typography: Inter
+   Paradigm: Notion x Wise (High Contrast, Geometric)
+*/
+
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    /* Core primitives */
+    --clr-ink: #0f0f0f;
+    --clr-paper: #ffffff;
+    --clr-surface: color-mix(in srgb, var(--clr-brand), white 82%);
+    /* Deeper tint for pastels */
+    /* Stronger tint */
+    --clr-chrome: color-mix(in srgb, var(--clr-brand), black 5%);
+    /* Muted chrome */
+
+    /* Dynamic Theme Accents */
+    --clr-brand: #C5E1A5;
+    /* Default Matcha Pastel */
+    --clr-brand-dim: color-mix(in srgb, var(--clr-brand), black 10%);
+    /* Darker for better contrast */
+    --clr-alert: #ff4a00;
+
+    /* Metrics */
+    --space-px: 1px;
+    --space-4: 4px;
+    --space-8: 8px;
+    --space-16: clamp(12px, 2vw, 16px);
+    --space-24: clamp(16px, 3vw, 24px);
+    --space-32: clamp(24px, 4vw, 32px);
+    --space-48: clamp(32px, 5vw, 48px);
+
+    /* Typography Scale (Fluid) */
+    --tx-tiny: .7rem;
+    --tx-sm: .85rem;
+    --tx-base: .95rem;
+    --tx-lg: clamp(1.1rem, 2vw, 1.25rem);
+    --tx-xl: clamp(1.5rem, 3vw, 1.75rem);
+    --tx-display: clamp(2rem, 5vw, 2.5rem);
+
+    --wght-book: 400;
+    --wght-medium: 500;
+    --wght-bold: 600;
+
+    /* Architecture */
+    --ease-snappy: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --ease-fluid: cubic-bezier(0.4, 0, 0.2, 1);
+    --radii-soft: 8px;
+    --radii-hard: 2px;
+}

@@ -1,0 +1,69 @@
+/* Reset // Naked tags */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: var(--clr-surface);
+    color: var(--clr-ink);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+}
+
+/* Typography Classes */
+.type-display {
+    font-size: var(--tx-display);
+    font-weight: var(--wght-bold);
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+}
+
+.type-h2 {
+    font-size: var(--tx-xl);
+    font-weight: var(--wght-bold);
+    letter-spacing: -0.03em;
+}
+
+.type-h3 {
+    font-size: var(--tx-lg);
+    font-weight: var(--wght-medium);
+    letter-spacing: -0.02em;
+}
+
+.type-caption {
+    font-size: var(--tx-sm);
+    color: #666;
+    font-weight: var(--wght-book);
+}
+
+.val-mono {
+    font-family: ui-monospace, monospace;
+    font-size: 0.9em;
+    letter-spacing: -0.02em;
+}
+
+.val-green {
+    color: #007054;
+    font-weight: var(--wght-bold);
+}
+
+/* Globals */
+button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+}
+
+input {
+    font-family: inherit;
+}

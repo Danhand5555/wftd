@@ -1,0 +1,138 @@
+/* ─── Responsive / Mobile ────────────────────────── */
+@media (max-width: 768px) {
+
+    /* Dashboard → single column */
+    .grid-layout {
+        grid-template-columns: 1fr;
+        gap: var(--space-24);
+    }
+
+    .panel-rail {
+        position: static;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-16);
+    }
+
+    /* Keep telemetry and weather in a horizontal-ish row if possible, or stacked nicely */
+    .telemetry-list {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        margin-top: var(--space-16);
+    }
+
+    .weather-metrics {
+        flex-wrap: wrap;
+        gap: var(--space-16);
+    }
+
+    .view-toggles {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    /* Navigation improvements */
+    .top-nav {
+        padding-top: var(--space-8);
+        align-items: center;
+    }
+
+    .brand-mark {
+        font-size: var(--tx-base);
+    }
+
+    /* Step form safe sizing */
+    .step-card {
+        padding: 40px clamp(16px, 5vw, 32px);
+    }
+
+    .majestic-label {
+        font-size: clamp(24px, 7vw, 36px);
+    }
+
+    .input-majestic {
+        font-size: clamp(20px, 6vw, 28px);
+    }
+
+    .immersive-dock {
+        padding-top: var(--space-32);
+        margin-top: var(--space-16);
+    }
+
+    .action-dock {
+        flex-direction: column-reverse;
+        gap: 12px;
+    }
+
+    .action-dock .btn-ghost {
+        width: 100%;
+        text-align: center;
+    }
+
+    .action-dock .btn-solid {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Modal → bottom sheet on mobile */
+    .modal-overlay {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .modal-surface {
+        max-width: 100%;
+        width: 100%;
+        border-left: none;
+        border-right: none;
+        border-bottom: none;
+        box-shadow: none;
+        border-radius: 20px 20px 0 0;
+        max-height: 85vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-body {
+        max-height: none;
+        overflow-y: auto;
+        flex: 1;
+        padding-bottom: 100px;
+        /* Space for mobile nav/safe areas */
+    }
+
+    /* Transport: 2×2 grid */
+    .transport-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Chat panel → full width */
+    .chat-panel {
+        right: 0;
+        left: 0;
+        width: 100%;
+        border-radius: 12px 12px 0 0;
+        border-left: none;
+        border-right: none;
+        max-height: 70vh;
+    }
+
+    .chat-float-btn {
+        right: 16px;
+        bottom: 16px;
+    }
+
+    .auth-surface {
+        padding: var(--space-24) var(--space-16);
+    }
+}
+
+@media (max-width: 480px) {
+    .panel-rail {
+        grid-template-columns: 1fr;
+    }
+
+    .toggle-btn {
+        padding: 8px 12px;
+        font-size: 11px;
+    }
+}

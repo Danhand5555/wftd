@@ -1,0 +1,307 @@
+/* Core Panel / Timeline Tree */
+.core-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    margin-bottom: var(--space-32);
+}
+
+.view-toggles .toggle-btn {
+    font-size: var(--tx-tiny);
+    text-transform: uppercase;
+    font-weight: var(--wght-bold);
+    padding: 4px 8px;
+    border: 1px solid var(--clr-ink);
+    border-radius: 20px;
+}
+
+.toggle-btn.active {
+    background: var(--clr-ink);
+    color: var(--clr-surface);
+}
+
+#regenerate-btn {
+    border-color: #ffcccc;
+    color: var(--clr-alert);
+}
+
+#regenerate-btn:hover {
+    background: var(--clr-alert);
+    color: white;
+    border-color: var(--clr-alert);
+}
+
+.timeline-track {
+    position: relative;
+    padding-left: 2ch;
+}
+
+.timeline-track::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 1px;
+    background: var(--clr-ink);
+    opacity: 0.15;
+}
+
+.track-node {
+    position: relative;
+    padding-bottom: var(--space-32);
+    /* Entrance Animation Choreography */
+    opacity: 0;
+    transform: translateX(-10px);
+    animation: driftIn 0.5s var(--ease-snappy) forwards;
+}
+
+.track-node:last-child {
+    padding-bottom: 0;
+}
+
+.track-node::before {
+    content: '';
+    position: absolute;
+    left: calc(-2ch - 2px);
+    top: 5px;
+    width: 5px;
+    height: 5px;
+    background: var(--clr-ink);
+    border-radius: 50%;
+}
+
+.node-meta {
+    font-size: var(--tx-sm);
+    font-weight: var(--wght-bold);
+    color: #666;
+    margin-bottom: var(--space-4);
+    display: block;
+}
+
+.node-surface {
+    background: var(--clr-paper);
+    border: 1px solid var(--clr-chrome);
+    padding: var(--space-16);
+    border-radius: var(--radii-hard);
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.node-surface:hover {
+    box-shadow: 2px 2px 0 var(--clr-brand);
+    transform: translate(-1px, -1px);
+    border-color: var(--clr-ink);
+}
+
+.node-surface h3 {
+    font-size: var(--tx-base);
+    font-weight: var(--wght-bold);
+    margin-bottom: 4px;
+}
+
+/* Tracking State Modifiers */
+.track-node.status-past {
+    opacity: 0.4;
+}
+
+.track-node.status-past .node-surface {
+    background: transparent;
+    border-style: dashed;
+    border-color: var(--clr-chrome);
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.track-node.status-active .node-surface {
+    border-color: var(--clr-ink);
+    box-shadow: 4px 4px 0 var(--clr-brand);
+    background: var(--clr-surface);
+}
+
+.track-node.status-active::before {
+    background: var(--clr-brand);
+    box-shadow: 0 0 8px var(--clr-brand);
+}
+
+/* Editable Modifiers */
+.editable-input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px dashed var(--clr-ink);
+    border-radius: 2px;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+    padding: 2px 4px;
+    margin: -3px -5px;
+    outline: none;
+}
+
+.editable-input:focus {
+    background: rgba(0, 0, 0, 0.1);
+    border-style: solid;
+}
+
+.node-surface p {
+    font-size: var(--tx-sm);
+    color: #555;
+    margin-bottom: var(--space-12);
+}
+
+.pill-cluster {
+    display: flex;
+    gap: 6px;
+}
+
+.data-pill {
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: var(--wght-bold);
+    letter-spacing: 0.05em;
+    padding: 2px 6px;
+    border-radius: 2px;
+    border: 1px solid;
+}
+
+.pill-work {
+    border-color: #222;
+    color: #222;
+    background: #e8e8e8;
+}
+
+.pill-meet {
+    border-color: var(--clr-alert);
+    color: var(--clr-alert);
+    background: #fff0eb;
+}
+
+.pill-leisure {
+    border-color: #007054;
+    color: #007054;
+    background: #e6f6ec;
+}
+
+@keyframes driftIn {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+
+
+/* Task Tracker — Inline Title Layout */
+.node-surface {
+    background: var(--clr-paper);
+    border: 1px solid var(--clr-chrome);
+    padding: var(--space-16);
+    border-radius: var(--radii-hard);
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.node-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-8);
+    gap: var(--space-12);
+}
+
+.title-left-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+}
+
+.title-left-group h3 {
+    margin-bottom: 0;
+    font-size: var(--tx-md);
+}
+
+.pill-check {
+    background: transparent;
+    border: 2px solid var(--clr-ink);
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.15s var(--ease-snappy);
+    color: transparent;
+}
+
+.pill-check:hover {
+    border-color: var(--clr-brand);
+    background: var(--clr-surface);
+}
+
+.pill-check.is-done {
+    background: var(--clr-ink);
+    border-color: var(--clr-ink);
+    color: var(--clr-paper);
+}
+
+.pill-check i,
+.pill-check svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Inline Right Clock */
+.large-clock {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: var(--radii-soft);
+    transition: all 0.2s;
+    user-select: none;
+    border: 1px solid var(--clr-chrome);
+    background: var(--clr-paper);
+    color: var(--clr-ink);
+}
+
+.large-clock:hover {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: var(--clr-ink);
+}
+
+.large-clock.is-running {
+    background: var(--clr-ink);
+    color: var(--clr-paper);
+    border-color: var(--clr-ink);
+}
+
+.large-clock.is-running:hover {
+    background: #333;
+}
+
+.clock-icon i,
+.clock-icon svg {
+    width: 14px;
+    height: 14px;
+}
+
+.timer-display {
+    font-family: monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+/* Task Done State */
+.track-node.status-done .node-surface {
+    opacity: 0.55;
+    border-style: dashed;
+}
+
+.track-node.status-done h3 {
+    text-decoration: line-through;
+    color: #888;
+}

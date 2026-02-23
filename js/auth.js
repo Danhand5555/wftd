@@ -1,6 +1,6 @@
 import { $, $$ } from './utils.js';
-import { _mountSurface, _renderAllStepSuggestions, _applyTheme } from './ui.js';
 import { signInWithGoogle, getUser, signOut, signInWithMagicLink, updateUserName, supabase } from './supabase.js';
+
 
 export async function _initAuth() {
     // Handle magic link callback (PKCE flow)
@@ -162,7 +162,8 @@ export async function _initAuth() {
         chip.addEventListener('click', () => {
             themeChips.forEach(c => c.classList.remove('active'));
             chip.classList.add('active');
-            _applyTheme(chipColor); // This helper saves to localStorage
+            document.documentElement.style.setProperty('--clr-brand', chipColor);
+            localStorage.setItem('wftd_theme', chipColor);
         });
     });
 
@@ -319,7 +320,9 @@ export async function _unlockWorkspace(alias) {
 
     // Theme application
     const themeColor = user?.user_metadata?.theme_color || localStorage.getItem('wftd_theme');
-    if (themeColor) _applyTheme(themeColor);
+    if (themeColor) {
+        document.documentElement.style.setProperty('--clr-brand', themeColor);
+    }
 
     if (user && !user.user_metadata?.full_name) {
         const promptedName = prompt('Welcome! What should we call you?', alias || '');
@@ -343,7 +346,9 @@ export async function _unlockWorkspace(alias) {
                     $('#loc-hidden-lon').value = data.state.location_lon || 100.5018;
                     $('#loc-hidden-name').value = data.state.location || 'Bangkok';
                 }
-                _mountSurface(data.state, data.itinerary, data.insights);
+                window.dispatchEvent(new CustomEvent('wftd-mount-surface', {
+                    detail: { payload: data.state, itinerary: data.itinerary, insights: data.insights }
+                }));
                 return; // Bypass form setup completely
             }
         } catch (e) { console.error('Error loading saved schedule:', e); }
@@ -361,7 +366,7 @@ export async function _unlockWorkspace(alias) {
         if (step1Label) {
             step1Label.textContent = `What's your main goal for today, ${alias}?`;
         }
-        _renderAllStepSuggestions();
+        window.dispatchEvent(new CustomEvent('wftd-render-suggestions'));
 
 
         // Focus first input automatically

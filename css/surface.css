@@ -1,0 +1,230 @@
+/* -------------------------------------
+   Main Surface Architecture
+------------------------------------- */
+.surface-main {
+    max-width: min(1100px, 100%);
+    margin: 0 auto;
+    padding: var(--space-24);
+    padding-bottom: 120px;
+    /* space for fixed chat panel */
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: var(--space-32);
+    opacity: 1;
+    transition: opacity 0.5s var(--ease-fluid);
+}
+
+.surface-main.hide {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: var(--space-16);
+    border-bottom: 3px solid var(--clr-ink);
+    /* Thicker line to match brand */
+}
+
+
+.nav-utils {
+    display: flex;
+    align-items: center;
+    gap: var(--space-16);
+}
+
+.meta-txt {
+    font-size: var(--tx-sm);
+    font-weight: var(--wght-medium);
+    color: #555;
+}
+
+.avatar-node {
+    width: 28px;
+    height: 28px;
+    background: radial-gradient(circle at top left, var(--clr-brand) 0%, #222 100%);
+    border-radius: 50%;
+}
+
+/* Grid Topography */
+.grid-layout {
+    display: grid;
+    grid-template-columns: minmax(min(280px, 100%), 3fr) 7fr;
+    gap: var(--space-48);
+    align-items: start;
+}
+
+/* Panel Rails */
+.panel-rail {
+    display: grid;
+    gap: var(--space-24);
+    position: sticky;
+    top: var(--space-24);
+    min-width: 0;
+}
+
+.data-card {
+    background: var(--clr-paper);
+    padding: var(--space-24);
+    border: 1px solid var(--clr-chrome);
+    border-radius: var(--radii-hard);
+    overflow: hidden;
+}
+
+.data-card.variant-subtle {
+    background: transparent;
+    border-style: dashed;
+}
+
+/* Weather Card Styles */
+.weather-card {
+    background: var(--clr-brand);
+    border-color: var(--clr-ink);
+}
+
+.weather-display {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-16);
+    margin-top: var(--space-8);
+}
+
+.weather-main {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.weather-temp {
+    font-size: var(--tx-display);
+    font-weight: var(--wght-bold);
+    letter-spacing: -0.05em;
+    line-height: 1;
+}
+
+.weather-desc {
+    font-size: var(--tx-sm);
+    font-weight: var(--wght-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.8;
+}
+
+.weather-metrics {
+    display: flex;
+    gap: var(--space-16);
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    padding-top: var(--space-16);
+}
+
+.metric-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.metric-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: var(--wght-bold);
+    opacity: 0.6;
+}
+
+.metric-val {
+    font-size: var(--tx-base);
+    font-weight: var(--wght-bold);
+}
+
+.aqi-good {
+    color: #007054;
+}
+
+.aqi-moderate {
+    color: #856404;
+}
+
+.aqi-unhealthy {
+    color: #721c24;
+}
+
+.card-kicker {
+    display: block;
+    font-size: var(--tx-tiny);
+    text-transform: uppercase;
+    font-weight: var(--wght-bold);
+    color: #888;
+    margin-bottom: var(--space-8);
+}
+
+.telemetry-list {
+    margin-top: var(--space-24);
+    display: grid;
+    gap: var(--space-16);
+}
+
+.telemetry-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: var(--tx-sm);
+    border-bottom: 1px solid var(--clr-chrome);
+    padding-bottom: 4px;
+    min-width: 0;
+    gap: 12px;
+}
+
+.telemetry-row dt {
+    color: #555;
+    flex-shrink: 0;
+}
+
+.telemetry-row dd {
+    font-weight: var(--wght-medium);
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.log-list {
+    list-style: none;
+    display: grid;
+    gap: var(--space-12);
+}
+
+.insight-item {
+    font-size: var(--tx-sm);
+    color: var(--clr-ink);
+    padding: var(--space-12) 0;
+    border-bottom: 1px solid var(--clr-chrome);
+    display: flex;
+    gap: var(--space-16);
+    align-items: flex-start;
+    line-height: 1.4;
+    transition: all 0.2s var(--ease-fluid);
+}
+
+.insight-item:last-child {
+    border-bottom: none;
+}
+
+.insight-item:hover {
+    padding-left: 4px;
+}
+
+.insight-index {
+    font-family: ui-monospace, monospace;
+    font-size: 10px;
+    font-weight: var(--wght-bold);
+    color: var(--clr-brand-dim);
+    margin-top: 3px;
+    flex-shrink: 0;
+}
+
+.insight-text {
+    flex: 1;
+    font-weight: var(--wght-medium);
+}

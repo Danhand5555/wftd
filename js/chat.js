@@ -1,5 +1,4 @@
 import { $ } from './utils.js';
-import { _mountSurface } from './ui.js';
 
 export const chatHistory = [];
 
@@ -64,7 +63,9 @@ If they want to update the current schedule, return JSON: {"type":"schedule_upda
                 const saved = JSON.parse(localStorage.getItem('wftd_today_schedule') || '{}');
                 saved.itinerary = parsed.schedule;
                 localStorage.setItem('wftd_today_schedule', JSON.stringify(saved));
-                _mountSurface(saved.state || {}, parsed.schedule, saved.insights || []);
+                window.dispatchEvent(new CustomEvent('wftd-mount-surface', {
+                    detail: { payload: saved.state || {}, itinerary: parsed.schedule, insights: saved.insights || [] }
+                }));
                 return;
             }
             if (parsed.type === 'memory_update' && parsed.new_fact) {
