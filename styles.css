@@ -374,9 +374,9 @@
     display: flex;
     border: 3px solid var(--clr-ink);
     border-radius: var(--radii-soft);
-    overflow: hidden;
     margin-bottom: 24px;
     background: var(--clr-paper);
+    padding: 0;
 }
 
 .switch-btn {
@@ -391,9 +391,18 @@
     background: transparent;
     cursor: pointer;
     transition: all 0.2s var(--ease-snappy);
+    position: relative;
 }
 
+/* Fix corner bleeding by giving buttons their own radii */
+.switch-btn:first-child {
+    border-radius: 5px 0 0 5px;
+    border-right: 2px solid var(--clr-ink);
+}
 
+.switch-btn:last-child {
+    border-radius: 0 5px 5px 0;
+}
 
 .switch-btn.active {
     background: var(--clr-ink);
