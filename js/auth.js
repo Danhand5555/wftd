@@ -137,11 +137,20 @@ export async function _initAuth() {
     const themeChips = $$('.theme-chip');
     const colors = Array.from(themeChips).map(chip => chip.dataset.color);
 
-    // 1. Determine Initial Color: Saved preference OR random available color
     const savedTheme = localStorage.getItem('wftd_theme');
-    const initialTheme = savedTheme || colors[Math.floor(Math.random() * colors.length)] || '#C5E1A5';
+    let initialTheme = savedTheme;
 
-    // 2. Preview the theme (without saving yet if it's the random one)
+    if (!initialTheme) {
+        // Non-repeating random logic
+        const lastHint = localStorage.getItem('wftd_last_random_hint');
+        const candidates = colors.filter(c => c !== lastHint);
+        initialTheme = candidates[Math.floor(Math.random() * candidates.length)] || colors[0];
+
+        // Save hint for next time (but don't make it the user's permanent theme yet)
+        localStorage.setItem('wftd_last_random_hint', initialTheme);
+    }
+
+    // 2. Preview the theme
     document.documentElement.style.setProperty('--clr-brand', initialTheme);
 
     // 3. Set active theme chip in UI & set up listeners
