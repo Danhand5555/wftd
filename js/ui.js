@@ -415,10 +415,9 @@ export function _mountSurface(state, itinerary, insights) {
 export function _bindModalEvents() {
     _bindProfileEvents();
     $('#timeline-root').addEventListener('click', (e) => {
-        if (e.target.closest('.pill-check') || e.target.closest('.large-clock')) return;
-
         const checkBtn = e.target.closest('.pill-check');
         if (checkBtn) {
+            checkBtn.blur(); // Remove focus outline after click
             const taskId = checkBtn.dataset.taskId;
             window._toggleTaskDone(taskId, checkBtn);
             return;
