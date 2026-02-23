@@ -133,20 +133,28 @@ export async function _initAuth() {
     });
 
 
-    // Apply saved theme color if exists
-    const savedTheme = localStorage.getItem('wftd_theme') || '#9fe870';
-    _applyTheme(savedTheme);
+    // Theme Initialization Logic
+    const themeChips = $$('.theme-chip');
+    const colors = Array.from(themeChips).map(chip => chip.dataset.color);
 
-    // Set active theme chip in UI
-    $$('.theme-chip').forEach(chip => {
-        if (chip.dataset.color === savedTheme) chip.classList.add('active');
+    // 1. Determine Initial Color: Saved preference OR random available color
+    const savedTheme = localStorage.getItem('wftd_theme');
+    const initialTheme = savedTheme || colors[Math.floor(Math.random() * colors.length)] || '#C5E1A5';
+
+    // 2. Apply the theme
+    _applyTheme(initialTheme);
+
+    // 3. Set active theme chip in UI & set up listeners
+    themeChips.forEach(chip => {
+        const chipColor = chip.dataset.color;
+        if (chipColor === initialTheme) chip.classList.add('active');
         else chip.classList.remove('active');
 
         chip.addEventListener('click', () => {
-            $$('.theme-chip').forEach(c => c.classList.remove('active'));
+            themeChips.forEach(c => c.classList.remove('active'));
             chip.classList.add('active');
-            const color = chip.dataset.color;
-            _applyTheme(color);
+            localStorage.setItem('wftd_theme', chipColor);
+            _applyTheme(chipColor);
         });
     });
 
