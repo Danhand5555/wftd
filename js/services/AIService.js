@@ -133,3 +133,39 @@ export async function generateSuggestions(job) {
     }
     return null;
 }
+
+export async function processChatAction(chatHistory, scheduleContext, userJob, foodPref, memory) {
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (!apiKey || apiKey === 'YOUR_GEMINI_API_KEY_HERE') throw new Error('No API key');
+
+    const systemPrompt = `You are SCHED AI. Schedule: ${scheduleContext}. User: ${userJob}, ${foodPref}. 
+User Memory (Habits/Preferences): ${memory}. 
+If the user tells you a new habit, preference, or fact to remember for ALWAYS, return a JSON: {"type":"memory_update","message":"Got it.","new_fact":"The new fact"}.
+If they want to update the current schedule, return JSON: {"type":"schedule_update","message":"...","schedule":[...]}. 
+Schedule updates MUST be an array of objects matching: {"time":"9:00 AM","t":"Task","d":"Desc","cat":"work","dr":"2h","loc":"Place", "cost": 500}.
+Otherwise plain text.`;
+
+    const messages = chatHistory.map(m => ({ role: m.role === 'user' ? 'user' : 'model', parts: [{ text: m.text }] }));
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ system_instruction: { parts: [{ text: systemPrompt }] }, contents: messages, generationConfig: { temperature: 0.6 } })
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to reach AI');
+    }
+
+    const raw = await response.json();
+    const replyText = raw.candidates[0].content.parts[0].text.trim();
+
+    // Parse the response
+    try {
+        const cleanedReply = replyText.replace(/```json/g, '').replace(/```/g, '').trim();
+        const jsonMatch = cleanedReply.match(/\{[\s\S]*\}/);
+        const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : cleanedReply);
+        return { type: 'json', data: parsed, rawText: replyText };
+    } catch {
+        return { type: 'text', text: replyText, rawText: replyText };
+    }
+}

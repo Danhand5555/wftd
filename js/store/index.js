@@ -3,6 +3,8 @@
  * Manages global application state to decouple UI from logic.
  */
 
+const _getRawItem = (key, fallback = '') => typeof window !== 'undefined' && window.localStorage ? localStorage.getItem(key) || fallback : fallback;
+
 class Store {
     constructor() {
         this.state = {
@@ -12,11 +14,11 @@ class Store {
             insights: [],
             payload: {},
             userProfile: {
-                alias: localStorage.getItem('wftd_alias') || 'Guest',
-                job: localStorage.getItem('wftd_job') || 'Professional',
-                food: localStorage.getItem('wftd_food') || '',
-                memory: localStorage.getItem('wftd_memory') || '',
-                theme: localStorage.getItem('wftd_theme') || '#9fe870'
+                alias: _getRawItem('wftd_alias', 'Guest'),
+                job: _getRawItem('wftd_job', 'Professional'),
+                food: _getRawItem('wftd_food'),
+                memory: _getRawItem('wftd_memory'),
+                theme: _getRawItem('wftd_theme', '#9fe870')
             },
             location: {
                 name: 'Bangkok',
