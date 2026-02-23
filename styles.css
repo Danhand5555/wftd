@@ -76,7 +76,25 @@
 .auth-box {
     width: 100%;
     max-width: 440px;
-    /* Slightly wider for the grid */
+    padding: 20px;
+    /* Extra breathing room on desktop */
+}
+
+/* Wizard Animations */
+.auth-box>div {
+    animation: authFadeIn 0.4s var(--ease-snappy);
+}
+
+@keyframes authFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Choice Layer */
@@ -758,17 +776,22 @@ input {
 }
 
 .btn-ghost {
-    color: #666;
+    background: transparent;
+    color: var(--clr-ink);
     font-size: var(--tx-sm);
-    font-weight: var(--wght-medium);
-    padding: 8px 16px;
+    font-weight: var(--wght-bold);
+    padding: 12px 16px;
+    border: 2px solid transparent;
     border-radius: var(--radii-soft);
-    transition: background 0.2s, color 0.2s;
+    transition: all 0.2s var(--ease-snappy);
+    text-decoration: underline;
+    text-underline-offset: 4px;
 }
 
 .btn-ghost:hover {
     background: var(--clr-surface);
-    color: var(--clr-ink);
+    border-color: var(--clr-ink);
+    text-decoration: none;
 }
 
 .btn-file-trigger {
