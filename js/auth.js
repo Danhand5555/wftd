@@ -26,10 +26,10 @@ export async function _initAuth() {
         $('#auth-login-layer').classList.add('hide');
     }
 
-    // Tab Switching Logic
-    $$('.tab-btn').forEach(btn => {
+    // Tab Switching Logic (Niche Aesthetic)
+    $$('.switch-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            $$('.tab-btn').forEach(b => b.classList.remove('active'));
+            $$('.switch-btn').forEach(b => b.classList.remove('active'));
             $$('.tab-content').forEach(c => c.classList.remove('active'));
             btn.classList.add('active');
             const target = btn.dataset.target;

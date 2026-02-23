@@ -45,11 +45,11 @@
     --radii-hard: 2px;
 }
 
-/* Auth System // Immersive Identity */
+/* Auth System // Niche Lifestyle Aesthetic */
 .auth-overlay {
     position: fixed;
     inset: 0;
-    background: var(--clr-paper);
+    background-color: var(--clr-surface);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -58,121 +58,163 @@
 
 .auth-box {
     width: 100%;
-    max-width: 800px;
-    padding: clamp(24px, 6vw, 80px);
-    display: flex;
-    flex-direction: column;
+    max-width: 500px;
+    padding: var(--space-48);
+    text-align: center;
+    animation: auth-fade-in 1.2s var(--ease-fluid);
 }
 
-/* Auth Specific UI elements that match Landing */
-.auth-tabs {
-    display: inline-flex;
-    background: var(--clr-surface);
-    padding: 6px;
-    border-radius: 40px;
-    margin-bottom: var(--space-32);
-    align-self: flex-start;
+@keyframes auth-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.tab-btn {
-    padding: 8px 16px;
+.auth-header {
+    margin-bottom: 64px;
+}
+
+.auth-kicker {
     font-size: 11px;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.2em;
+    color: var(--clr-brand-dim);
     font-weight: var(--wght-bold);
-    color: #888;
-    border-radius: 40px;
-}
-
-.tab-btn.active {
-    background: var(--clr-ink);
-    color: var(--clr-paper);
-}
-
-.auth-sub {
-    font-size: var(--tx-lg);
-    color: #888;
-    margin-top: var(--space-8);
-    margin-bottom: var(--space-48);
-}
-
-.input-majestic-sm {
-    width: 100%;
-    padding: 0;
-    background: transparent;
-    border: none;
-    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
-    color: var(--clr-ink);
-    font-size: var(--tx-xl);
-    font-weight: var(--wght-bold);
-    letter-spacing: -0.01em;
-    padding-bottom: 8px;
-    transition: all 0.3s var(--ease-snappy);
-}
-
-.input-majestic-sm:focus {
-    outline: none;
-    border-color: var(--clr-brand);
-}
-
-/* Secondary header for Auth */
-.auth-section-title {
-    font-size: var(--tx-sm);
-    font-weight: var(--wght-bold);
-    color: #bbb;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    margin-bottom: var(--space-16);
+    margin-bottom: 12px;
     display: block;
 }
 
-.tab-content {
-    display: none;
-    flex-direction: column;
-    padding-top: var(--space-24);
+.auth-title {
+    font-size: clamp(32px, 4vw, 44px);
+    font-weight: var(--wght-bold);
+    letter-spacing: -0.04em;
+    line-height: 1;
+    color: var(--clr-ink);
 }
 
-.tab-content.active {
+/* Niche Profile Grid */
+.profile-stack {
     display: flex;
+    flex-direction: column;
+    gap: 40px;
+    margin-bottom: 80px;
+}
+
+.auth-input-group {
+    position: relative;
+}
+
+.auth-input-group label {
+    position: absolute;
+    top: -24px;
+    left: 0;
+    font-size: 10px;
+    font-weight: var(--wght-bold);
+    text-transform: uppercase;
+    color: #bbb;
+    letter-spacing: 0.1em;
+}
+
+.niche-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 12px 0;
+    font-size: var(--tx-lg);
+    font-weight: var(--wght-medium);
+    color: var(--clr-ink);
+    transition: border-color 0.4s;
+}
+
+.niche-input:focus {
+    outline: none;
+    border-bottom-color: var(--clr-brand);
+}
+
+.niche-input::placeholder {
+    color: rgba(0, 0, 0, 0.1);
+}
+
+/* The Lock (PIN) */
+.pin-niche-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
 }
 
 .pin-entry {
-    font-size: 80px;
+    font-size: 48px;
+    text-align: center;
+    letter-spacing: 24px;
+    font-weight: var(--wght-bold);
+    color: var(--clr-ink);
     border: none;
     background: transparent;
-    font-weight: var(--wght-bold);
-    letter-spacing: 0.3em;
-    width: 100%;
-    margin-bottom: var(--space-24);
+    width: 240px;
+    padding-left: 24px;
+    /* offset the last spacing */
     outline: none;
-    color: var(--clr-ink);
-    text-align: left;
 }
 
 .pin-entry::placeholder {
     color: rgba(0, 0, 0, 0.05);
 }
 
-.pin-entry:focus {
-    color: var(--clr-brand-dim);
+/* Choice Tabs */
+.auth-switch {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 48px;
 }
 
-.btn-solid-lg {
+.switch-btn {
+    font-size: 11px;
+    font-weight: var(--wght-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #ccc;
+    transition: color 0.3s;
+}
+
+.switch-btn.active {
+    color: var(--clr-ink);
+    text-decoration: underline;
+    text-underline-offset: 8px;
+    text-decoration-thickness: 2px;
+}
+
+/* Primary Action */
+.btn-niche-main {
     background: var(--clr-ink);
     color: var(--clr-paper);
-    padding: 18px 32px;
+    padding: 20px 48px;
+    border-radius: 60px;
     font-size: var(--tx-base);
     font-weight: var(--wght-bold);
-    border-radius: 40px;
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    transition: all 0.2s;
+    transition: all 0.4s var(--ease-fluid);
+    border: 1px solid var(--clr-ink);
 }
 
-.btn-solid-lg:hover {
-    background: #333;
-    transform: scale(1.02);
+.btn-niche-main:hover {
+    background: var(--clr-brand);
+    color: var(--clr-ink);
+    border-color: var(--clr-brand);
+    transform: scale(1.05);
+}
+
+.auth-footer {
+    margin-top: 100px;
+    padding-top: 40px;
+    border-top: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .w-full {
