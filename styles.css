@@ -4,6 +4,10 @@
    Paradigm: Notion x Wise (High Contrast, Geometric)
 */
 
+* {
+    box-sizing: border-box;
+}
+
 :root {
     /* Core primitives */
     --clr-ink: #0f0f0f;
@@ -415,6 +419,8 @@
 
 .tab-content.active {
     display: block;
+    min-height: 136px;
+    /* 64 (input) + 16 (gap) + 56 (button) */
 }
 
 /* PIN */
@@ -438,14 +444,17 @@
     color: var(--clr-ink);
     background: var(--clr-paper);
     outline: none;
-    transition: all 0.15s;
+    line-height: 1;
+    /* Prevent vertical expansion from font metrics */
+    transition: all 0.2s var(--ease-snappy);
 }
 
 .pin-entry[type="email"] {
     font-size: var(--tx-base);
     letter-spacing: normal;
     text-align: left;
-    padding: 0 16px;
+    padding: 0 20px;
+    /* Slightly more padding for email */
     font-weight: var(--wght-medium);
 }
 
