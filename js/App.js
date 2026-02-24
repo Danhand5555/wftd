@@ -17,10 +17,12 @@ import { WizardUI } from './components/WizardUI.js';
 import { TimelineUI } from './components/TimelineUI.js';
 import { WeatherUI } from './components/WeatherUI.js';
 import { ModalUI } from './components/ModalUI.js';
+import { TimePickerUI } from './components/TimePickerUI.js';
 
 class App {
     constructor() {
-        this.wizard = new WizardUI();
+        this.timePicker = new TimePickerUI();
+        this.wizard = new WizardUI(this.timePicker);
         this.modal = new ModalUI();
         this.timeline = new TimelineUI(this.modal);
         this.weather = new WeatherUI();
@@ -269,7 +271,13 @@ class App {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        const app = new App();
+        app.init();
+    });
+} else {
+    // DOM is already ready
     const app = new App();
     app.init();
-});
+}

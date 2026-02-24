@@ -4,13 +4,22 @@ import { _formatTo12h } from '../utils.js';
 import { classifyGoalFlow, generateSuggestions } from '../services/AIService.js';
 
 export class WizardUI {
-    constructor() {
+    constructor(timePicker) {
+        this.timePicker = timePicker;
         this.bindEvents();
     }
 
     bindEvents() {
         $$('.next-btn').forEach(btn => btn.addEventListener('click', () => this.nextStep()));
         $$('.back-btn').forEach(btn => btn.addEventListener('click', () => this.prevStep()));
+
+        // Bind Custom Time Picker to Time Inputs
+        const timeInputs = [$('#auth-start-input'), $('#auth-eod-input')].filter(Boolean);
+        timeInputs.forEach(input => {
+            input.addEventListener('click', () => {
+                if (this.timePicker) this.timePicker.open(input);
+            });
+        });
 
         // Suggestion Chips Binding
         document.addEventListener('click', (e) => {
@@ -32,11 +41,10 @@ export class WizardUI {
                 input.value = input.value ? input.value + ', ' + val : val;
                 this.handleEntitiesFeedback({ target: input });
             } else if (stepNum === "6") {
-                const input = $('input[name="eod"]');
+                const input = $(`input[name="${targetName}"]`);
                 if (input) {
-                    // Extract just the time part since the chip says "End: 5:00 PM"
-                    input.value = val.replace('End: ', '');
-                    this.handleEodFeedback({ target: input });
+                    input.value = val;
+                    if (targetName === 'eod') this.handleEodFeedback({ target: input });
                 }
             }
         });
@@ -247,30 +255,19 @@ export class WizardUI {
         this.showFeedback('fb-capital', msg);
     }
 
-    handleHoursFeedback() {
-        const startVal = $('input[name="start_time"]')?.value.trim();
-        const endVal = $('input[name="eod"]')?.value.trim();
-
-        let msgParts = [];
-
-        if (startVal) {
-            if (startVal.toLowerCase() === 'now') {
-                msgParts.push("Starting immediately");
-            } else {
-                const stdStart = _formatTo12h(startVal);
-                if (stdStart) msgParts.push(`Starting at ${stdStart}`);
-            }
+    handleEodFeedback(e) {
+        let val = '';
+        if (e && e.target) {
+            val = e.target.value.trim();
+        } else {
+            val = $('input[name="eod"]')?.value.trim() || '';
         }
 
-        if (endVal) {
-            const stdEnd = _formatTo12h(endVal);
-            if (stdEnd) {
-                if (msgParts.length > 0) msgParts.push(`until ${stdEnd}.`);
-                else msgParts.push(`Wrapping up at ${stdEnd}.`);
-            }
+        let msg = '';
+        if (val) {
+            msg = `Quitting at ${val}. Locked in till then.`;
         }
-
-        this.showFeedback('fb-eod', msgParts.join(' '));
+        this.showFeedback('fb-eod', msg);
     }
 
     buildAgendaInputs(entitiesStr) {

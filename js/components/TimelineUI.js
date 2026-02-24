@@ -34,6 +34,22 @@ export class TimelineUI {
                 return;
             }
 
+            const tabBtn = e.target.closest('.day-tab-btn');
+            if (tabBtn) {
+                const day = tabBtn.dataset.day;
+                track.querySelectorAll('.day-tab-btn').forEach(b => b.classList.remove('active'));
+                tabBtn.classList.add('active');
+
+                track.querySelectorAll('.track-node, .day-separator').forEach(el => {
+                    if (el.dataset.day === day) {
+                        el.classList.remove('hide');
+                    } else {
+                        el.classList.add('hide');
+                    }
+                });
+                return;
+            }
+
             const nodeEl = e.target.closest('.track-node');
             if (!nodeEl) return;
             try {
@@ -52,24 +68,46 @@ export class TimelineUI {
 
         const taskStates = JSON.parse(localStorage.getItem('wftd_task_states') || '{}');
 
-        let currentDayLabel = null;
+        // Multi-day Tab Logic
+        let uniqueDays = [...new Set(itinerary.filter(n => n.day).map(n => n.day))];
+        const hasMultiDay = uniqueDays.length > 1;
+        const activeDay = hasMultiDay ? uniqueDays[0] : '';
         let htmlStr = '';
+
+        if (hasMultiDay) {
+            htmlStr += `
+            <div class="timeline-tabs-container">
+                <div class="timeline-day-tabs">
+                    ${uniqueDays.map((day, ix) => `
+                        <button type="button" class="day-tab-btn ${ix === 0 ? 'active' : ''}" data-day="${day.replace(/"/g, '&quot;')}">
+                            ${day.replace('Day ', 'D')}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+            `;
+        }
+
+        htmlStr += `<div class="timeline-track">`;
+        let currentDayLabel = null;
 
         itinerary.forEach((node, i) => {
             const taskId = `task-${i}`;
             const state = taskStates[taskId] || { done: false, elapsed: 0, running: false };
+            const dayAttr = node.day || '';
+            const hideClass = (hasMultiDay && dayAttr !== activeDay) ? 'hide' : '';
 
-            if (node.day && node.day !== currentDayLabel) {
+            if (!hasMultiDay && node.day && node.day !== currentDayLabel) {
                 currentDayLabel = node.day;
                 htmlStr += `
-                <div class="day-separator" style="animation-delay: ${i * 0.12}s">
+                <div class="day-separator ${hideClass}" data-day="${dayAttr.replace(/"/g, '&quot;')}" style="animation-delay: ${i * 0.12}s">
                     <h4>${currentDayLabel}</h4>
                 </div>
                 `;
             }
 
             htmlStr += `
-            <article class="track-node ${state.done ? 'status-done' : ''}" data-index="${i}" data-task-id="${taskId}" style="animation-delay: ${i * 0.12}s; cursor: pointer;" data-info="${JSON.stringify(node).replace(/"/g, '&quot;')}">
+            <article class="track-node ${state.done ? 'status-done' : ''} ${hideClass}" data-day="${dayAttr.replace(/"/g, '&quot;')}" data-index="${i}" data-task-id="${taskId}" style="animation-delay: ${i * 0.12}s; cursor: pointer;" data-info="${JSON.stringify(node).replace(/"/g, '&quot;')}">
                 <div class="node-surface">
                     <div class="node-title-row">
                         <div class="title-left-group">
@@ -98,6 +136,7 @@ export class TimelineUI {
             `;
         });
 
+        htmlStr += `</div>`; // Close .timeline-track
         track.innerHTML = htmlStr;
 
         if (window.lucide) window.lucide.createIcons();
@@ -105,32 +144,103 @@ export class TimelineUI {
 
     startLiveTracking() {
         if (this.trackingInterval) clearInterval(this.trackingInterval);
-        const checkTimeStates = () => {
-            const now = new Date(), currentTotalMinutes = (now.getHours() * 60) + now.getMinutes();
+
+        const checkTimeStates = (isInitial = false) => {
+            const now = new Date();
+            const currentTotalMinutes = (now.getHours() * 60) + now.getMinutes();
+
+            // Determine active day based on generation date
+            let activeDayOffset = 0;
+            const savedDate = localStorage.getItem('wftd_today_date');
+            if (savedDate) {
+                const t1 = new Date(savedDate);
+                t1.setHours(0, 0, 0, 0);
+                const t2 = new Date();
+                t2.setHours(0, 0, 0, 0);
+                activeDayOffset = Math.floor((t2 - t1) / 86400000);
+            }
+            if (activeDayOffset < 0) activeDayOffset = 0;
+
             const nodes = document.querySelectorAll('.track-node');
+            if (nodes.length === 0) return;
+
+            let uniqueDays = [];
+            nodes.forEach(n => {
+                const day = n.dataset.day;
+                if (day && !uniqueDays.includes(day)) uniqueDays.push(day);
+            });
+
+            const expectedActiveDay = uniqueDays[activeDayOffset] || uniqueDays[0];
+            let foundActiveNode = null;
+
             nodes.forEach((node, idx) => {
                 const data = JSON.parse(node.dataset.info || '{}');
+                const nodeDay = node.dataset.day || expectedActiveDay;
+
+                if (expectedActiveDay && nodeDay !== expectedActiveDay) {
+                    node.classList.remove('status-active');
+                    if (uniqueDays.indexOf(nodeDay) < activeDayOffset) {
+                        node.classList.add('status-past');
+                    } else {
+                        node.classList.remove('status-past');
+                    }
+                    return;
+                }
+
                 if (!data.time) return;
                 const parts = _parseTimeParts(data.time);
                 if (!parts) return;
                 const nodeTotalMinutes = (parts.hours * 60) + parts.minutes;
                 let nextNodeMinutes = 24 * 60;
-                if (idx + 1 < nodes.length) {
-                    const nextData = JSON.parse(nodes[idx + 1].dataset.info || '{}');
+
+                let j = idx + 1;
+                while (j < nodes.length) {
+                    const nextData = JSON.parse(nodes[j].dataset.info || '{}');
+                    if ((nodes[j].dataset.day || expectedActiveDay) !== expectedActiveDay) break;
                     const nextParts = _parseTimeParts(nextData.time);
                     if (nextParts) {
                         nextNodeMinutes = (nextParts.hours * 60) + nextParts.minutes;
+                        break;
                     }
+                    j++;
                 }
-                node.classList.remove('status-past', 'status-active');
-                if (currentTotalMinutes >= nodeTotalMinutes && currentTotalMinutes < nextNodeMinutes) node.classList.add('status-active');
-                else if (currentTotalMinutes >= nextNodeMinutes) node.classList.add('status-past');
-            });
-        };
-        checkTimeStates();
-        this.trackingInterval = setInterval(checkTimeStates, 60000);
-    }
 
+                node.classList.remove('status-past', 'status-active');
+                if (currentTotalMinutes >= nodeTotalMinutes && currentTotalMinutes < nextNodeMinutes) {
+                    node.classList.add('status-active');
+                    if (!foundActiveNode) foundActiveNode = node;
+                }
+                else if (currentTotalMinutes >= nextNodeMinutes) {
+                    node.classList.add('status-past');
+                }
+            });
+
+            if (isInitial && expectedActiveDay) {
+                const tabBtn = document.querySelector(`.day-tab-btn[data-day="${expectedActiveDay.replace(/"/g, '&quot;')}"]`);
+                if (tabBtn && !tabBtn.classList.contains('active')) {
+                    tabBtn.click();
+                }
+
+                // Fallback: If no exact matching active node is found right now, grab the first upcoming node or just the first node of the day!
+                if (!foundActiveNode) {
+                    const candidateNodes = Array.from(nodes).filter(n => (n.dataset.day || expectedActiveDay) === expectedActiveDay);
+                    foundActiveNode = candidateNodes.find(n => !n.classList.contains('status-past')) || candidateNodes[0];
+                }
+
+                if (foundActiveNode) {
+                    setTimeout(() => {
+                        window.scrollTo({
+                            top: foundActiveNode.getBoundingClientRect().top + window.scrollY - 100,
+                            behavior: 'smooth'
+                        });
+                    }, 400);
+                }
+            }
+        };
+
+        checkTimeStates(true);
+        this.trackingInterval = setInterval(() => checkTimeStates(false), 60000);
+    }
     toggleTaskDone(taskId, btnEl) {
         const states = JSON.parse(localStorage.getItem('wftd_task_states') || '{}');
         if (!states[taskId]) states[taskId] = { done: false, elapsed: 0, running: false };

@@ -148,3 +148,117 @@
     align-items: center;
     gap: 8px;
 }
+
+/* Custom Time Picker Dial Module */
+.tp-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10005;
+    background: rgba(15, 15, 15, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: flex-end;
+    /* Slides up from bottom */
+    justify-content: center;
+    opacity: 1;
+    visibility: visible;
+    transition: all 0.3s var(--ease-fluid);
+}
+
+.tp-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.tp-card {
+    background: var(--clr-paper);
+    width: 100%;
+    max-width: 440px;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    border: 2px solid var(--clr-ink);
+    border-bottom: none;
+    box-shadow: 0 -8px 0 var(--clr-surface);
+    padding: var(--space-24);
+    transform: translateY(0);
+    transition: transform 0.4s var(--ease-snappy);
+}
+
+.tp-overlay.hidden .tp-card {
+    transform: translateY(100%);
+}
+
+.tp-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-24);
+    border-bottom: 2px solid var(--clr-ink);
+    padding-bottom: 12px;
+}
+
+.tp-header h4 {
+    font-size: var(--tx-md);
+    font-weight: var(--wght-bold);
+}
+
+.tp-dial-container {
+    display: flex;
+    justify-content: space-between;
+    height: 150px;
+    position: relative;
+    border: 2px solid var(--clr-ink);
+    background: #f8f8f8;
+    border-radius: var(--radii-hard);
+    overflow: hidden;
+}
+
+.tp-highlight {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 40px;
+    margin-top: -20px;
+    border-top: 2px solid var(--clr-ink);
+    border-bottom: 2px solid var(--clr-ink);
+    background: rgba(197, 225, 165, 0.2);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.tp-col {
+    flex: 1;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    padding: 55px 0;
+    /* buffer to keep first/last in center */
+    margin: 0;
+    list-style: none;
+    text-align: center;
+    scrollbar-width: none;
+}
+
+.tp-col::-webkit-scrollbar {
+    display: none;
+}
+
+.tp-col li {
+    height: 40px;
+    line-height: 40px;
+    font-size: 20px;
+    font-weight: var(--wght-bold);
+    color: var(--clr-ink);
+    scroll-snap-align: center;
+    opacity: 0.3;
+    transition: opacity 0.2s;
+    user-select: none;
+    cursor: pointer;
+}
+
+.tp-col li.active {
+    opacity: 1;
+    color: #000;
+}

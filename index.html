@@ -419,23 +419,23 @@
                                 <div class="auth-field">
                                     <label for="auth-start-input"
                                         style="color:var(--clr-brand); font-size:11px; text-transform:uppercase; font-weight:var(--wght-bold); display:block; margin-bottom:4px; text-align: left;">Start
-                                        Time</label>
-                                    <input type="text" id="auth-start-input" class="input-majestic" name="start_time"
-                                        placeholder="e.g. Now, 9:00 AM" autocomplete="off"
-                                        style="font-size: 20px; padding: 10px;">
+                                        Time (Optional)</label>
+                                    <input type="text" readonly id="auth-start-input" class="input-majestic"
+                                        name="start_time" placeholder="e.g. 9:00 AM"
+                                        style="font-size: 20px; padding: 10px; cursor: pointer;">
                                 </div>
                                 <div class="auth-field">
                                     <label for="auth-eod-input"
                                         style="color:var(--clr-brand); font-size:11px; text-transform:uppercase; font-weight:var(--wght-bold); display:block; margin-bottom:4px; text-align: left;">End
                                         Time</label>
-                                    <input type="text" id="auth-eod-input" class="input-majestic" name="eod"
-                                        placeholder="e.g. 5:00 PM" autocomplete="off"
-                                        style="font-size: 20px; padding: 10px;">
+                                    <input type="text" readonly id="auth-eod-input" class="input-majestic" name="eod"
+                                        placeholder="e.g. 5:00 PM"
+                                        style="font-size: 20px; padding: 10px; cursor: pointer;">
                                 </div>
                             </div>
                             <div class="suggestion-chips" style="margin-top: 16px;">
-                                <button type="button" class="chip" data-target="start_time" data-value="Now">Start:
-                                    Now</button>
+                                <button type="button" class="chip" data-target="start_time" data-value="9:00 AM">Start:
+                                    9:00 AM</button>
                                 <button type="button" class="chip" data-target="eod" data-value="5:00 PM">End: 5:00
                                     PM</button>
                                 <button type="button" class="chip" data-target="eod" data-value="8:00 PM">End: 8:00
@@ -558,7 +558,7 @@
                         </div>
                     </header>
 
-                    <div class="timeline-track" id="timeline-root">
+                    <div id="timeline-root">
                         <!-- Hydrated by engine -->
                     </div>
                 </section>
@@ -726,6 +726,23 @@
                             placeholder="e.g. I must take a 30 min walk at 6 PM. I hate early morning meetings."></textarea>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Custom Time Picker Modal -->
+        <div id="tp-modal" class="tp-overlay hidden">
+            <div class="tp-card">
+                <div class="tp-header">
+                    <h4>Select Time</h4>
+                    <button class="icon-btn tp-close">&times;</button>
+                </div>
+                <div class="tp-dial-container">
+                    <div class="tp-highlight"></div>
+                    <ul class="tp-col" id="tp-hour"></ul>
+                    <ul class="tp-col" id="tp-min"></ul>
+                    <ul class="tp-col" id="tp-ampm"></ul>
+                </div>
+                <button class="btn-solid" id="tp-confirm" style="width: 100%; margin-top: 16px;">Set Time</button>
             </div>
         </div>
 

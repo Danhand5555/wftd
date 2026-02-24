@@ -355,3 +355,56 @@
     border-radius: 50%;
     z-index: 2;
 }
+
+/* Timeline Tabs for Multi-Day UX */
+.timeline-tabs-container {
+    margin-bottom: var(--space-32);
+    overflow-x: auto;
+    padding-bottom: 8px;
+    /* space for drop shadows */
+    padding-top: 4px;
+    padding-left: 2px;
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+    mask-image: linear-gradient(to right, black 85%, transparent 100%);
+}
+
+.timeline-tabs-container::-webkit-scrollbar {
+    display: none;
+}
+
+.timeline-day-tabs {
+    display: flex;
+    gap: var(--space-12);
+}
+
+.day-tab-btn {
+    white-space: nowrap;
+    padding: 8px 16px;
+    background: var(--clr-paper);
+    border: 1px solid var(--clr-chrome);
+    border-radius: var(--radii-hard);
+    font-size: var(--tx-sm);
+    font-weight: var(--wght-bold);
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s var(--ease-snappy);
+    outline: none;
+}
+
+.day-tab-btn:hover {
+    border-color: var(--clr-ink);
+    color: var(--clr-ink);
+    transform: translate(-1px, -1px);
+    box-shadow: 2px 2px 0 var(--clr-brand);
+}
+
+.day-tab-btn.active {
+    background: var(--clr-brand);
+    color: var(--clr-ink);
+    border: 2px solid var(--clr-ink);
+    transform: translate(-3px, -3px);
+    box-shadow: 4px 4px 0 var(--clr-ink);
+    padding: 7px 15px;
+    /* Offset to keep box size stable visually initially since border goes from 1 to 2 */
+}

@@ -86,8 +86,14 @@ export async function signInWithMagicLink(email, name = null, themeColor = null)
  */
 export async function getUser() {
     if (!supabase) return null;
-    const { data: { user } } = await supabase.auth.getUser();
-    return user;
+    try {
+        const { data, error } = await supabase.auth.getUser();
+        if (error || !data) return null;
+        return data.user || null;
+    } catch (e) {
+        console.error('Supabase getUser error:', e);
+        return null;
+    }
 }
 
 /**
