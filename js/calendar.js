@@ -17,16 +17,29 @@ export function _handleExportCalendar() {
             "METHOD:PUBLISH"
         ];
 
+        let currentDayLabel = null;
+        let dayOffset = 0;
         const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-        const dateStr = `${year}${month}${day}`;
 
         itinerary.forEach((node, i) => {
             if (node.dr === 'EOD') return;
             const parts = _parseTimeParts(node.time);
             if (!parts) return;
+
+            if (node.day && node.day !== currentDayLabel) {
+                if (currentDayLabel !== null) {
+                    dayOffset++;
+                }
+                currentDayLabel = node.day;
+            }
+
+            const eventDate = new Date(today);
+            eventDate.setDate(today.getDate() + dayOffset);
+
+            const year = eventDate.getFullYear();
+            const month = String(eventDate.getMonth() + 1).padStart(2, '0');
+            const dateDay = String(eventDate.getDate()).padStart(2, '0');
+            const dateStr = `${year}${month}${dateDay}`;
 
             const startStr = `${dateStr}T${String(parts.hours).padStart(2, '0')}${String(parts.minutes).padStart(2, '0')}00`;
             let endHours = parts.hours, endMinutes = parts.minutes;

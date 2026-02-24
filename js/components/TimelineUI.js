@@ -52,11 +52,23 @@ export class TimelineUI {
 
         const taskStates = JSON.parse(localStorage.getItem('wftd_task_states') || '{}');
 
-        track.innerHTML = itinerary.map((node, i) => {
+        let currentDayLabel = null;
+        let htmlStr = '';
+
+        itinerary.forEach((node, i) => {
             const taskId = `task-${i}`;
             const state = taskStates[taskId] || { done: false, elapsed: 0, running: false };
 
-            return `
+            if (node.day && node.day !== currentDayLabel) {
+                currentDayLabel = node.day;
+                htmlStr += `
+                <div class="day-separator" style="animation-delay: ${i * 0.12}s">
+                    <h4>${currentDayLabel}</h4>
+                </div>
+                `;
+            }
+
+            htmlStr += `
             <article class="track-node ${state.done ? 'status-done' : ''}" data-index="${i}" data-task-id="${taskId}" style="animation-delay: ${i * 0.12}s; cursor: pointer;" data-info="${JSON.stringify(node).replace(/"/g, '&quot;')}">
                 <div class="node-surface">
                     <div class="node-title-row">
@@ -84,7 +96,9 @@ export class TimelineUI {
                 </div>
             </article>
             `;
-        }).join('');
+        });
+
+        track.innerHTML = htmlStr;
 
         if (window.lucide) window.lucide.createIcons();
     }

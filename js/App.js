@@ -11,7 +11,7 @@ import { _handleExportCalendar } from './calendar.js';
 
 import { generateScheduleViaAI } from './services/AIService.js';
 import { getWeatherContext } from './services/WeatherService.js';
-import { requestGeolocation, reverseGeocode } from './services/LocationService.js';
+import { requestGeolocation, reverseGeocode, initMapPicker } from './services/LocationService.js';
 
 import { WizardUI } from './components/WizardUI.js';
 import { TimelineUI } from './components/TimelineUI.js';
@@ -139,12 +139,20 @@ class App {
             });
         });
 
-        // Minimal PIN Map logic could also reside here or inside LocationService.
+        // Initial center for the pin (Bangkok roughly)
+        const defaultLat = 13.7563;
+        const defaultLon = 100.5018;
+
         pinBtn.addEventListener('click', () => {
             pinBtn.classList.add('selected'); gpsBtn.classList.remove('selected');
-            const mapContainer = $('#loc-map-container'); mapContainer.classList.remove('hide');
+            const mapContainer = $('#loc-map-container');
+            mapContainer.classList.remove('hide');
             setTimeout(() => mapContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 150);
-            // Leaflet map init will stay simple for this orchestrator, see original code for full pin drag.
+
+            // Initialize Leaflet Map
+            initMapPicker('loc-picker-map', defaultLat, defaultLon, (name, lat, lon) => {
+                setResolved(name, lat, lon);
+            });
         });
     }
 
@@ -216,8 +224,19 @@ class App {
         $('#state-directive').textContent = payload.directive;
         $('#stat-capital').textContent = payload.capital ? `${payload.capital} THB` : 'None';
 
-        // Use standard util formatting if desired
-        $('#stat-margin').textContent = payload.eod || '5:00 PM';
+        // Re-compute rounded start time for UI display
+        const now = new Date();
+        let startMins = now.getMinutes() < 30 ? 30 : 0;
+        let startHours = now.getHours();
+        if (startMins === 0) startHours = (startHours + 1) % 24;
+        const ampm = startHours >= 12 ? 'PM' : 'AM';
+        const displayHours = startHours % 12 || 12;
+        const displayMins = startMins === 0 ? '00' : '30';
+        const roundedStartTime = `${displayHours}:${displayMins} ${ampm}`;
+
+        let hoursText = payload.eod || '5:00 PM';
+        hoursText = `${roundedStartTime} - ${hoursText}`;
+        $('#stat-margin').textContent = hoursText;
         $('#stat-entities').textContent = payload.entities || 'Solo Session';
 
         const logContainer = $('#system-logs');

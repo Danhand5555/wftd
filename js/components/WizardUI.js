@@ -17,6 +17,7 @@ export class WizardUI {
             const chip = e.target.closest('.chip');
             if (!chip) return;
             const val = chip.dataset.value;
+            const targetName = chip.dataset.target; // "start_time" or "eod"
             const stepCard = chip.closest('.step-card');
             if (!stepCard) return;
             const stepNum = stepCard.dataset.step;
@@ -30,6 +31,13 @@ export class WizardUI {
                 const input = $('input[name="entities"]');
                 input.value = input.value ? input.value + ', ' + val : val;
                 this.handleEntitiesFeedback({ target: input });
+            } else if (stepNum === "6") {
+                const input = $('input[name="eod"]');
+                if (input) {
+                    // Extract just the time part since the chip says "End: 5:00 PM"
+                    input.value = val.replace('End: ', '');
+                    this.handleEodFeedback({ target: input });
+                }
             }
         });
 
@@ -160,15 +168,15 @@ export class WizardUI {
 
         if (isWork) {
             if (locLabel) locLabel.textContent = "Where's your deep work station today?";
-            if (eodLabel) eodLabel.textContent = "When are you wrapping up tonight?";
+            if (eodLabel) eodLabel.textContent = "What are your core work hours?";
             if (notesLabel) notesLabel.textContent = "Any deep work focus details?";
         } else if (isLeisure) {
             if (locLabel) locLabel.textContent = "Where's your base for exploration?";
-            if (eodLabel) eodLabel.textContent = "When do you want to head back?";
+            if (eodLabel) eodLabel.textContent = "When are you heading out and returning?";
             if (notesLabel) notesLabel.textContent = "Any specific places you must see?";
         } else if (isSocial) {
             if (locLabel) locLabel.textContent = "Where are you starting your day?";
-            if (eodLabel) eodLabel.textContent = "When is your last networking event?";
+            if (eodLabel) eodLabel.textContent = "When does your social marathon end?";
         }
     }
 
@@ -239,13 +247,30 @@ export class WizardUI {
         this.showFeedback('fb-capital', msg);
     }
 
-    handleEodFeedback(e) {
-        const val = e.target.value.trim();
-        let msg = '';
-        const stdTime = _formatTo12h(val);
-        if (stdTime) msg = `Quitting at ${stdTime}. Locked in till then.`;
-        else if (val) msg = `Format time (e.g., 9:00 PM, 21:00, 2100)`;
-        this.showFeedback('fb-eod', msg);
+    handleHoursFeedback() {
+        const startVal = $('input[name="start_time"]')?.value.trim();
+        const endVal = $('input[name="eod"]')?.value.trim();
+
+        let msgParts = [];
+
+        if (startVal) {
+            if (startVal.toLowerCase() === 'now') {
+                msgParts.push("Starting immediately");
+            } else {
+                const stdStart = _formatTo12h(startVal);
+                if (stdStart) msgParts.push(`Starting at ${stdStart}`);
+            }
+        }
+
+        if (endVal) {
+            const stdEnd = _formatTo12h(endVal);
+            if (stdEnd) {
+                if (msgParts.length > 0) msgParts.push(`until ${stdEnd}.`);
+                else msgParts.push(`Wrapping up at ${stdEnd}.`);
+            }
+        }
+
+        this.showFeedback('fb-eod', msgParts.join(' '));
     }
 
     buildAgendaInputs(entitiesStr) {

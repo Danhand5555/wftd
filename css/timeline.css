@@ -318,3 +318,40 @@
     text-decoration: line-through;
     color: #888;
 }
+
+/* Day Header / Separator */
+.day-separator {
+    margin: var(--space-32) 0 var(--space-16) -2ch;
+    padding-left: 2ch;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.day-separator h4 {
+    background: var(--clr-brand);
+    color: var(--clr-ink);
+    padding: 6px 12px;
+    border: 2px solid var(--clr-ink);
+    border-radius: var(--radii-hard);
+    font-size: var(--tx-sm);
+    font-weight: var(--wght-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    position: relative;
+    z-index: 2;
+    box-shadow: 2px 2px 0 var(--clr-ink);
+}
+
+.day-separator::before {
+    content: '';
+    position: absolute;
+    left: -2px;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    background: var(--clr-brand);
+    border: 2px solid var(--clr-ink);
+    border-radius: 50%;
+    z-index: 2;
+}

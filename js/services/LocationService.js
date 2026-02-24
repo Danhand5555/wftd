@@ -29,6 +29,50 @@ export function requestGeolocation(onSuccess, onError) {
     );
 }
 
+let mapInstance = null;
+let mapMarker = null;
+
+export function initMapPicker(containerId, initialLat, initialLon, onLocationResolved) {
+    if (!window.L) {
+        console.error("Leaflet not loaded");
+        return;
+    }
+
+    if (!mapInstance) {
+        mapInstance = L.map(containerId).setView([initialLat, initialLon], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(mapInstance);
+
+        const icon = L.divIcon({
+            className: 'custom-map-pin',
+            html: `<div style="font-size: 32px; line-height: 1; text-align: center; transform: translate(-10px, -28px); filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.3));">📍</div>`,
+            iconSize: [32, 32],
+            iconAnchor: [16, 32]
+        });
+
+        mapMarker = L.marker([initialLat, initialLon], { draggable: true, icon }).addTo(mapInstance);
+
+        mapMarker.on('dragend', async () => {
+            const pos = mapMarker.getLatLng();
+            const name = await reverseGeocode(pos.lat, pos.lng);
+            if (onLocationResolved) onLocationResolved(name, pos.lat, pos.lng);
+        });
+
+        // Initial resolution
+        reverseGeocode(initialLat, initialLon).then(name => {
+            if (onLocationResolved) onLocationResolved(name, initialLat, initialLon);
+        });
+    } else {
+        // Just invalidate size and reset view if already initialized
+        setTimeout(() => {
+            mapInstance.invalidateSize();
+            mapInstance.setView([initialLat, initialLon], 13);
+            mapMarker.setLatLng([initialLat, initialLon]);
+        }, 100);
+    }
+}
+
 export async function tryGeocode(query, fallbackLat, fallbackLon) {
     const lower = (query || '').toLowerCase();
 

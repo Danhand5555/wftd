@@ -409,20 +409,37 @@
                     </div>
                 </div>
 
-                <!-- Step 6: End of Day -->
+                <!-- Step 6: Operating Hours -->
                 <div class="step-card hidden-right" data-step="6">
                     <div class="step-content">
                         <span class="step-counter">6 of 7</span>
                         <label class="input-block majestic-block">
-                            <span class="label-txt majestic-label">When are you calling it a day?</span>
-                            <div class="input-majestic-wrapper">
-                                <input type="text" id="auth-eod-input" class="input-majestic" name="eod"
-                                    placeholder="e.g. 5:00 PM" autocomplete="off">
+                            <span class="label-txt majestic-label">What are your hours today?</span>
+                            <div class="auth-row" style="margin-top: 16px;">
+                                <div class="auth-field">
+                                    <label for="auth-start-input"
+                                        style="color:var(--clr-brand); font-size:11px; text-transform:uppercase; font-weight:var(--wght-bold); display:block; margin-bottom:4px; text-align: left;">Start
+                                        Time</label>
+                                    <input type="text" id="auth-start-input" class="input-majestic" name="start_time"
+                                        placeholder="e.g. Now, 9:00 AM" autocomplete="off"
+                                        style="font-size: 20px; padding: 10px;">
+                                </div>
+                                <div class="auth-field">
+                                    <label for="auth-eod-input"
+                                        style="color:var(--clr-brand); font-size:11px; text-transform:uppercase; font-weight:var(--wght-bold); display:block; margin-bottom:4px; text-align: left;">End
+                                        Time</label>
+                                    <input type="text" id="auth-eod-input" class="input-majestic" name="eod"
+                                        placeholder="e.g. 5:00 PM" autocomplete="off"
+                                        style="font-size: 20px; padding: 10px;">
+                                </div>
                             </div>
-                            <div class="suggestion-chips">
-                                <button type="button" class="chip" data-value="5:00 PM">5:00 PM</button>
-                                <button type="button" class="chip" data-value="6:00 PM">6:00 PM</button>
-                                <button type="button" class="chip" data-value="8:00 PM">8:00 PM (LATE)</button>
+                            <div class="suggestion-chips" style="margin-top: 16px;">
+                                <button type="button" class="chip" data-target="start_time" data-value="Now">Start:
+                                    Now</button>
+                                <button type="button" class="chip" data-target="eod" data-value="5:00 PM">End: 5:00
+                                    PM</button>
+                                <button type="button" class="chip" data-target="eod" data-value="8:00 PM">End: 8:00
+                                    PM</button>
                             </div>
                             <span class="feedback-txt" id="fb-eod"></span>
                         </label>

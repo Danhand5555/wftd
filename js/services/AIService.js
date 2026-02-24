@@ -10,9 +10,32 @@ export async function generateScheduleViaAI(payload, userJob, foodPref, startLoc
     const ocrClause = ocrText ? `\n\nPDF Schedule Context: ${ocrText}` : '';
     const memoryClause = memory ? `\n\nUser's Long-Term Memory / Habits: ${memory}` : '';
 
-    const prompt = `You are a creative personal scheduler for a user in Bangkok. Return ONLY raw JSON.
-Format: {"itinerary": [{"time":"9:00 AM","t":"Task","d":"Desc","cat":"work","dr":"2h","loc":"Place", "cost": 500}], "insights": ["tip1", "tip2"]}
-User data: ${JSON.stringify(payload)}${notesClause}${memoryClause}${startLocClause}${ocrClause}`;
+    // Time Context - Auto Calculate Start Time
+    const now = new Date();
+    const nowLocal = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+    // Round to next 30 or 00 minute block
+    let startMins = now.getMinutes() < 30 ? 30 : 0;
+    let startHours = now.getHours();
+    if (startMins === 0) startHours = (startHours + 1) % 24;
+
+    // Helper to format hours
+    const ampm = startHours >= 12 ? 'PM' : 'AM';
+    const displayHours = startHours % 12 || 12;
+    const displayMins = startMins === 0 ? '00' : '30';
+    const roundedStartTime = `${displayHours}:${displayMins} ${ampm}`;
+
+    let timeClause = `\nCurrent local time is ${nowLocal}.`;
+    timeClause += `\nThe schedule should START around: ${roundedStartTime}.`;
+
+    if (payload.eod) {
+        timeClause += `\nThe schedule should END by: ${payload.eod}.`;
+    }
+    timeClause += `\nIMPORTANT: The very first task in the generated schedule MUST start at or closely after ${roundedStartTime}! Do not schedule anything before ${roundedStartTime}.`;
+
+    const prompt = `You are a creative personal scheduler for a user in Bangkok. Generate a continuous 7-day schedule. Return ONLY raw JSON.
+Format: {"itinerary": [{"day": "Day 1 - Monday", "time":"9:00 AM","t":"Task","d":"Desc","cat":"work","dr":"2h","loc":"Place", "cost": 500}], "insights": ["tip1", "tip2"]}
+Make sure to provide a full 7 days of activities. User data: ${JSON.stringify(payload)}${notesClause}${memoryClause}${startLocClause}${ocrClause}${timeClause}`;
 
 
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
@@ -142,7 +165,7 @@ export async function processChatAction(chatHistory, scheduleContext, userJob, f
 User Memory (Habits/Preferences): ${memory}. 
 If the user tells you a new habit, preference, or fact to remember for ALWAYS, return a JSON: {"type":"memory_update","message":"Got it.","new_fact":"The new fact"}.
 If they want to update the current schedule, return JSON: {"type":"schedule_update","message":"...","schedule":[...]}. 
-Schedule updates MUST be an array of objects matching: {"time":"9:00 AM","t":"Task","d":"Desc","cat":"work","dr":"2h","loc":"Place", "cost": 500}.
+Schedule updates MUST be an array of objects matching: {"day": "Day 1 - Monday", "time":"9:00 AM","t":"Task","d":"Desc","cat":"work","dr":"2h","loc":"Place", "cost": 500}.
 Otherwise plain text.`;
 
     const messages = chatHistory.map(m => ({ role: m.role === 'user' ? 'user' : 'model', parts: [{ text: m.text }] }));
